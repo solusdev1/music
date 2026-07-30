@@ -163,5 +163,25 @@
   },
   "shorts_por_semana": 0,
   "shorts_policy": "nenhum",
-  "janela_decisao_dias": 60
+  "janela_decisao_dias": 60,
+  "angulos": [
+    "quem está no meio da luta agora, sem resposta ainda",
+    "quem já atravessou e olha pra trás com gratidão",
+    "a mãe/pai que reza pelo filho que saiu de casa",
+    "quem perdeu alguém e ainda aprende a viver com a falta",
+    "o trabalhador que volta exausto e encontra força pra amanhã",
+    "quem falhou, sentiu vergonha e foi recebido de volta",
+    "a pessoa que reza de madrugada porque não consegue dormir",
+    "quem cuida de um doente e precisa segurar a própria fé",
+    "o jovem que quase desistiu e decidiu ficar mais um dia",
+    "quem recomeçou do zero depois de perder tudo"
+  ],
+  "variacoes_estilo": [
+    "barítono rouco, slide guitar em primeiro plano, órgão suave ao fundo, bateria com vassourinha, andamento arrastado",
+    "voz média, violão dedilhado conduzindo, órgão discreto, andamento um pouco mais alto",
+    "quase acústico: violão e voz, slide entra só no último refrão, sem bateria",
+    "banda completa, coral feminino de apoio no refrão final, órgão presente",
+    "muito lento e íntimo, voz sussurrada, cordas suaves ao fundo, sem percussão"
+  ],
+  "style_base": "Country blues gospel brasileiro, português do interior, gravação analógica quente, sem brilho digital"
 }

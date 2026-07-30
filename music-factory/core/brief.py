@@ -10,7 +10,7 @@ import json
 from datetime import date
 from pathlib import Path
 
-from . import catalog, learn, opportunity, playlist, quality
+from . import catalog, learn, opportunity, playlist, quality, songbrief
 
 
 def load_niche(niches_dir, niche):
@@ -200,7 +200,8 @@ Música gerada com auxílio de inteligência artificial.
 """
 
 
-def generate(conn, cfg, out_root, *, today=None, n_songs=None, niches_dir=None):
+def generate(conn, cfg, out_root, *, today=None, n_songs=None, niches_dir=None,
+             com_playlist=False):
     """Gera a pasta da pauta do dia. Retorna caminho e avisos."""
     today = today or date.today().isoformat()
     n_songs = n_songs or cfg.get("songs_per_day", 5)
@@ -247,88 +248,74 @@ def generate(conn, cfg, out_root, *, today=None, n_songs=None, niches_dir=None):
         )
         novas_ids.append(row["id"])
 
-    # Plano da playlist: novas do dia + acervo elegível
-    plano = playlist.build(
-        conn, niche, new_track_ids=novas_ids,
-        target_sec=cfg.get("target_sec", 3600),
-        cooldown_days=cfg.get("cooldown_faixa_dias", 21),
-    )
-    avisos.extend(plano["warnings"])
-    chapters = playlist.render_chapters(plano)
+    # Playlist só é montada quando pedida — não é caminho diário
+    plano, chapters = None, ""
+    if com_playlist:
+        plano = playlist.build(
+            conn, niche, new_track_ids=novas_ids,
+            target_sec=cfg.get("target_sec", 3600),
+            cooldown_days=cfg.get("cooldown_faixa_dias", 21),
+        )
+        avisos.extend(plano["warnings"])
+        chapters = playlist.render_chapters(plano)
 
     out = Path(out_root) / today / niche
-    (out / "playlist").mkdir(parents=True, exist_ok=True)
-
-    spw = cfg.get("shorts_por_semana")
-    if spw:
-        gap = learn.shorts_gap(conn, niche)
-        limite = max(1, round(7 / spw))
-        if gap is None:
-            avisos.append(
-                f"política do canal é {spw} Short(s)/semana, mas nenhum Short foi "
-                "registrado ainda (use add-published --formato short)."
-            )
-        elif gap > limite:
-            avisos.append(
-                f"⏱️ último Short há {gap} dias (política: {spw}/semana). Este canal "
-                "depende de cadência de Shorts — verifique a entrega dos longos."
-            )
+    out.mkdir(parents=True, exist_ok=True)
 
     evitar = quality.avoid_list(conn, niche, protegidas=cfg.get("palavras_protegidas", ()))
     if evitar["palavras"]:
         avisos.append(
             f"{len(evitar['palavras'])} imagem(ns) saturada(s) no acervo "
-            f"({', '.join(evitar['palavras'][:5])}…) — o prompt já manda evitar."
+            f"({', '.join(evitar['palavras'][:5])}…) — a pauta já manda evitar."
         )
 
-    (out / "01-PROMPT-PARA-CLAUDE-LETRAS.md").write_text(
-        lyrics_prompt(cfg, tema, n_songs, titulos, evitar, irmaos), encoding="utf-8")
-    p = out / "playlist"
-    p.joinpath("titulo-variacoes.txt").write_text(
-        "\n".join(f"{i}. {t['titulo']}" for i, t in enumerate(titulos, 1)), encoding="utf-8")
-    p.joinpath("tracklist-chapters.txt").write_text(chapters, encoding="utf-8")
-    p.joinpath("descricao.txt").write_text(
-        descricao(cfg, tema, chapters, titulos[0]["titulo"]), encoding="utf-8")
-    p.joinpath("hashtags.txt").write_text(" ".join(cfg["hashtags"]), encoding="utf-8")
-    p.joinpath("tags-youtube.txt").write_text(", ".join(cfg["tags_youtube"]), encoding="utf-8")
-    p.joinpath("comentario-fixado.txt").write_text(cfg["comentario_fixado"], encoding="utf-8")
-    p.joinpath("prompt-thumbnail.txt").write_text(cfg["prompt_thumbnail"], encoding="utf-8")
+    # ── NÚCLEO: a pauta de criação musical ──
+    faixas = songbrief.montar_lote(conn, cfg, tema, n_songs, evitar=evitar)
+    songbrief.escrever_pasta(cfg, tema, faixas, out, evitar=evitar, irmaos=irmaos)
+    songbrief.registrar_angulos(conn, niche, faixas)
 
-    novas = sum(1 for i in plano["sequence"] if i["is_new"])
+    # ── OPCIONAL: pacote de playlist, fora do caminho diário ──
+    if com_playlist:
+        p = out / "playlist"
+        p.mkdir(parents=True, exist_ok=True)
+        p.joinpath("titulo-variacoes.txt").write_text(
+            "\n".join(f"{i}. {t['titulo']}" for i, t in enumerate(titulos, 1)), encoding="utf-8")
+        p.joinpath("tracklist-chapters.txt").write_text(chapters, encoding="utf-8")
+        p.joinpath("descricao.txt").write_text(
+            descricao(cfg, tema, chapters, titulos[0]["titulo"]), encoding="utf-8")
+        p.joinpath("hashtags.txt").write_text(" ".join(cfg["hashtags"]), encoding="utf-8")
+        p.joinpath("tags-youtube.txt").write_text(", ".join(cfg["tags_youtube"]), encoding="utf-8")
+        p.joinpath("comentario-fixado.txt").write_text(cfg["comentario_fixado"], encoding="utf-8")
+        p.joinpath("prompt-thumbnail.txt").write_text(cfg["prompt_thumbnail"], encoding="utf-8")
+
     resumo = f"""# PAUTA DO DIA — {cfg['nome_exibicao']} — {today}
 
-## Tema escolhido
+## Tema do lote
 **{tema}**
 _Critério: {criterio}._
 
-## Playlist planejada
-- Faixas: **{len(plano['sequence'])}** ({novas} novas + {len(plano['sequence']) - novas} do acervo)
-- Duração: **{playlist._fmt_ts(plano['total_sec'])}** (alvo {playlist._fmt_ts(plano['target_sec'])})
-- Abertura: **{plano['sequence'][0]['title']}** (maior VPH do acervo)
+## As {n_songs} faixas
+| # | papel | ângulo | cor sonora |
+|---|-------|--------|------------|
+""" + "\n".join(
+        f"| {f['n']} | {f['papel'][:26]} | {f['angulo'][:44]} | {(f['variacao'] or '—')[:40]} |"
+        for f in faixas
+    ) + f"""
 
-## Título recomendado
-{titulos[0]['titulo']}
-
-## O que fazer agora
-1. Cole `01-PROMPT-PARA-CLAUDE-LETRAS.md` no Claude → recebe as {n_songs} letras
-2. Registre cada letra: `cli.py add-song --niche {niche} ...`
-3. Gere os áudios no Suno com o style prompt do nicho
-4. Registre a duração real: `cli.py set-audio --slug ... --file ... --duration ...`
-5. Refaça a playlist com timestamps corretos: `cli.py build-playlist --niche {niche}`
+## O que fazer
+1. Cole `01-PROMPT-LETRAS.md` no Claude → recebe as {n_songs} {'direções sonoras' if cfg.get('formato')=='instrumental' else 'letras'}
+2. Salve cada uma em `musicas/NN-*/03-lyrics-suno.txt` (style e exclude já estão prontos)
+3. Gere no Suno e registre: `cli.py add-song --niche {niche} ...`
 
 ## Avisos
 {chr(10).join('- ⚠️ ' + a for a in avisos) if avisos else '- nenhum'}
-
-## Tracklist provisória
-```
-{chapters}
-```
 """
-    (out / "00-RESUMO-DO-DIA.md").write_text(resumo, encoding="utf-8")
+    (out / "00-PAUTA-DO-DIA.md").write_text(resumo, encoding="utf-8")
 
-    playlist.save(conn, plano, slug=f"{niche}-{today}", title=titulos[0]["titulo"])
+    if com_playlist and plano:
+        playlist.save(conn, plano, slug=f"{niche}-{today}", title=titulos[0]["titulo"])
     catalog.register_theme(conn, niche, tema)
     catalog.register_hook(conn, niche, titulos[0]["gancho"])
 
-    return {"out_dir": out, "plano": plano, "tema": tema,
+    return {"out_dir": out, "plano": plano, "tema": tema, "faixas": faixas,
             "titulos": titulos, "avisos": avisos}

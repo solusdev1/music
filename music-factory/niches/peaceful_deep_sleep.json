@@ -120,5 +120,19 @@
   "palavras_protegidas": [],
   "shorts_por_semana": 0,
   "shorts_policy": "nenhum",
-  "janela_decisao_dias": 60
+  "janela_decisao_dias": 60,
+  "angulos": [
+    "o momento exato em que o corpo relaxa e solta o peso do dia",
+    "a chuva que começa devagar e vira colchão sonoro",
+    "a casa vazia respirando enquanto todos dormem",
+    "a mente que finalmente para de repassar o dia",
+    "a passagem lenta da noite para a primeira luz",
+    "o calor de um cômodo aquecido enquanto lá fora está frio"
+  ],
+  "variacoes_estilo": [
+    "soft felt piano almost alone, warm pads far in the background",
+    "warm pads up front, sparse piano, continuous gentle rain texture",
+    "sustained low drone, very soft and widely spaced bell tones"
+  ],
+  "style_base": "[Instrumental] [No Vocals] Ambient sleep music, healing soundscape, cinematic calm, 60 BPM, wide stereo, soft transients, no harsh highs"
 }

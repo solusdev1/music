@@ -26,15 +26,14 @@ OUT_ROOT = BASE / "out"
 def cmd_daily_brief(args, conn):
     cfg = brief.load_niche(args.niches_dir, args.niche)
     r = brief.generate(conn, cfg, args.out, n_songs=args.songs,
-                       niches_dir=args.niches_dir)
+                       niches_dir=args.niches_dir, com_playlist=args.com_playlist)
     print(f"✅ Pauta gerada: {r['out_dir']}")
-    print(f"   Tema: {r['tema']}")
-    print(f"   Título: {r['titulos'][0]['titulo']}")
-    print(f"   Playlist: {len(r['plano']['sequence'])} faixas, "
-          f"{playlist._fmt_ts(r['plano']['total_sec'])}")
+    print(f"   Tema do lote: {r['tema']}")
+    for f in r["faixas"]:
+        print(f"   {f['n']}. {f['papel'][:24]:<24} | {f['angulo'][:40]}")
     for a in r["avisos"]:
         print(f"   ⚠️  {a}")
-    print(f"\n👉 Próximo passo: cole {r['out_dir']}/01-PROMPT-PARA-CLAUDE-LETRAS.md no Claude")
+    print(f"\n👉 Cole no Claude: {r['out_dir']}/01-PROMPT-LETRAS.md")
 
 
 def cmd_add_song(args, conn):
@@ -156,6 +155,21 @@ def cmd_migrate(args, conn):
     print("\n   As faixas chegam sem histórico de uso: o público do canal novo é outro.")
 
 
+def cmd_radar(args, conn):
+    cfg = brief.load_niche(args.niches_dir, args.niche)
+    print(opportunity.radar_report(conn, args.niche, cfg["temas"]))
+
+
+def cmd_radar_add(args, conn):
+    opportunity.add_ideia(conn, args.niche, args.ideia, origem=args.origem, score=args.score)
+    print(f"✅ ideia registrada em {args.niche}: {args.ideia}")
+
+
+def cmd_radar_approve(args, conn):
+    opportunity.aprovar_ideia(conn, args.niche, args.ideia)
+    print(f"✅ aprovada. Copie para o campo `temas` de niches/{args.niche}.json")
+
+
 def cmd_status(args, conn):
     print("📊 MUSIC FACTORY\n")
     for n in conn.execute("SELECT niche, COUNT(*) c FROM tracks GROUP BY niche"):
@@ -178,6 +192,8 @@ def main(argv=None):
     s.add_argument("--niche", required=True)
     s.add_argument("--out", default=str(OUT_ROOT))
     s.add_argument("--songs", type=int, default=None)
+    s.add_argument("--com-playlist", action="store_true",
+                   help="também gera o pacote de metadados da playlist")
     s.set_defaults(func=cmd_daily_brief)
 
     s = sub.add_parser("add-song", help="registra uma música no catálogo")
@@ -260,6 +276,22 @@ def main(argv=None):
     s.add_argument("--destino", required=True)
     s.add_argument("--incluir-sem-audio", action="store_true")
     s.set_defaults(func=cmd_migrate)
+
+    s = sub.add_parser("radar", help="ideias novas de música pendentes")
+    s.add_argument("--niche", required=True)
+    s.set_defaults(func=cmd_radar)
+
+    s = sub.add_parser("radar-add", help="registra ideia de tema descoberta")
+    s.add_argument("--niche", required=True)
+    s.add_argument("--ideia", required=True)
+    s.add_argument("--origem", default="radar")
+    s.add_argument("--score", type=float)
+    s.set_defaults(func=cmd_radar_add)
+
+    s = sub.add_parser("radar-approve", help="aprova ideia para virar tema")
+    s.add_argument("--niche", required=True)
+    s.add_argument("--ideia", required=True)
+    s.set_defaults(func=cmd_radar_approve)
 
     s = sub.add_parser("status", help="visão geral")
     s.set_defaults(func=cmd_status)

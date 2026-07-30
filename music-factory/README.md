@@ -1,40 +1,91 @@
 # Music Factory
 
-**Foco: qualidade da música e oportunidade.** Renderização e upload de vídeo
-ficam fora — são feitos manualmente.
+**Foco: criação de músicas para os canais.** Tudo o mais — playlist, métricas,
+saúde de canal, migração — existe como comando avulso, fora do caminho diário.
+Renderização e upload são manuais.
 
-Motor de produção diária para canais de música. Resolve o que faltava: **estado**.
-
-O gargalo era visível no pacote anterior — a playlist de 1h trazia
-`"Acrescente aqui uma música antiga sua com tema de força/renovação"` nas
-posições 6 a 9, porque nada sabia o que já existia no acervo. Agora sabe.
-
-Zero dependências externas: Python 3 puro (`sqlite3`, `json`, `argparse`).
+Zero dependências externas: Python 3 puro.
 
 ---
 
-## O que a Fase 1 entrega
+## O que roda todo dia
 
-| Recurso | O que faz |
+Só duas coisas:
+
+1. **A pauta de criação** — um lote de músicas por canal, cada faixa
+   especificada individualmente
+2. **O radar** — ideias novas de tema, porque o banco se esgota com 5
+   músicas/dia
+
+```bash
+python3 cli.py daily-brief --niche country_blues_fe   # o systemd chama isto
+python3 cli.py radar --niche country_blues_fe
+```
+
+## Por que cada faixa é especificada individualmente
+
+A primeira versão gerava **um prompt pedindo "5 letras no mesmo tema"**, com o
+mesmo style prompt para todas. Cinco músicas assim saem como cinco variações
+da mesma: iguais na letra e iguais no som.
+
+Agora cada faixa do lote recebe:
+
+| Dimensão | Por quê |
 |---|---|
-| **Catálogo** | Toda faixa já criada, com tema, mood, duração, status e VPH |
-| **Anti-repetição** | Bloqueia faixa reusada em <21d, tema em <60d, gancho de título em <30d |
-| **Montador de playlist** | Sequência de 1h com regras + chapters com timestamps |
-| **Pauta diária** | Pasta pronta por nicho: tema do dia, títulos, prompt de letras, metadados |
-| **Rodar sozinho** | `systemd` timer diário às 06:00, um nicho quebrado não derruba os outros |
-| **Qualidade** | Lê TODAS as letras do acervo e acusa imagens, rimas e títulos gastos |
-| **Oportunidade** | Tema do dia escolhido por demanda real (cache semanal), não por rodízio |
+| **ângulo narrativo próprio** | de quem é a história — "quem está no meio da luta agora" ≠ "quem já atravessou e olha pra trás" |
+| **cor sonora própria** | senão o Suno devolve a mesma faixa 5x |
+| **papel no lote** | retenção, narrativa, oração, renovação, descanso |
+| **o que está gasto** | imagens e rimas já saturadas no acervo |
 
-### Regras do montador
+Os ângulos rotacionam por uso histórico: o lote de amanhã não repete o de hoje.
 
-1. **Posição 1 = faixa do acervo com maior VPH.** Nunca abrir com faixa nova — os primeiros 30s decidem a sessão.
-2. **Novas em posições pares**, nunca abrindo nem fechando.
-3. **Nenhuma faixa reutilizada em menos de 21 dias.**
-4. **Fecho com 2 faixas `calm`** (sono/oração).
-5. **Chapters automáticos** a partir das durações acumuladas.
+### `style_base` separado da instrumentação
 
-Quando o acervo não dá conta, a playlist sai mais curta **com aviso explícito
-do déficit** — nunca quebra e nunca finge que está completa.
+Concatenar a variação ao style prompt completo criava **contradição** — a base
+afirmava "slide guitar, coral final" enquanto a variação pedia "quase acústico,
+sem coral". O Suno responde mal a prompt que se contradiz.
+
+Por isso `style_base` carrega só a identidade que nunca muda (gênero, idioma,
+caráter da gravação) e `variacoes_estilo` carrega a instrumentação:
+
+```
+FAIXA 1: <base>, barítono rouco, slide em primeiro plano, bateria com vassourinha
+FAIXA 3: <base>, quase acústico: violão e voz, slide só no último refrão, sem bateria
+FAIXA 5: <base>, muito lento e íntimo, voz sussurrada, cordas ao fundo, sem percussão
+```
+
+## O que a pauta entrega
+
+```
+out/2026-07-31/country_blues_fe/
+├── 00-PAUTA-DO-DIA.md          tema do lote + tabela das faixas
+├── 01-PROMPT-LETRAS.md         as N faixas especificadas uma a uma
+└── musicas/
+    ├── 01-retencao/
+    │   ├── 00-BRIEFING.txt              ângulo, papel, cor sonora, mood
+    │   ├── 01-style-prompt-suno.txt     ← pronto, com a variação da faixa
+    │   ├── 02-exclude-styles-suno.txt   ← pronto
+    │   └── 03-lyrics-suno.txt           ← cole a letra aqui
+    └── 02-narrativa/ …
+```
+
+Style e exclude saem prontos porque são determinísticos. A letra é do modelo —
+o sistema entrega o prompt em vez de fingir que gera letra boa em template.
+
+Para o pacote de playlist (título, descrição, hashtags, chapters), passe
+`--com-playlist`. Fora do caminho diário por decisão.
+
+## Radar — ideias novas de música
+
+```bash
+python3 cli.py radar-add --niche country_blues_fe \
+    --ideia "Lamentações 3:23 — as misericórdias se renovam a cada manhã" --score 88
+python3 cli.py radar --niche country_blues_fe
+python3 cli.py radar-approve --niche country_blues_fe --ideia "..."
+```
+
+Avisa quando o banco de temas cai abaixo de 30 — com 5 músicas/dia e descanso
+de 60 dias, abaixo disso o rodízio esgota e passa a reaproveitar tema antigo.
 
 ---
 

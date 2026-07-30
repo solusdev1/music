@@ -154,5 +154,25 @@
   ],
   "shorts_por_semana": 0,
   "shorts_policy": "nenhum",
-  "janela_decisao_dias": 60
+  "janela_decisao_dias": 60,
+  "angulos": [
+    "quem está no meio da luta agora, sem resposta ainda",
+    "quem já atravessou e olha pra trás com gratidão",
+    "a mãe/pai que reza pelo filho que saiu de casa",
+    "quem perdeu alguém e ainda aprende a viver com a falta",
+    "o trabalhador que volta exausto e encontra força pra amanhã",
+    "quem falhou, sentiu vergonha e foi recebido de volta",
+    "a pessoa que reza de madrugada porque não consegue dormir",
+    "quem cuida de um doente e precisa segurar a própria fé",
+    "o jovem que quase desistiu e decidiu ficar mais um dia",
+    "quem recomeçou do zero depois de perder tudo"
+  ],
+  "variacoes_estilo": [
+    "barítono rasgado, guitarra slide al frente, órgano suave al fondo, ritmo arrastrado",
+    "voz media, guitarra punteada conduciendo, órgano discreto, tempo algo más alto",
+    "casi acústico: guitarra y voz, slide solo en el último coro, sin batería",
+    "banda completa, coro femenino en el coro final, órgano presente",
+    "muy lento e íntimo, voz susurrada, cuerdas suaves al fondo, sin percusión"
+  ],
+  "style_base": "Blues gospel campirano latinoamericano, español neutro, grabación analógica cálida, sin brillo digital"
 }

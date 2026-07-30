@@ -159,5 +159,25 @@
   ],
   "shorts_por_semana": 0,
   "shorts_policy": "nenhum",
-  "janela_decisao_dias": 60
+  "janela_decisao_dias": 60,
+  "angulos": [
+    "someone still in the middle of it, no answer yet",
+    "someone looking back years later, grateful",
+    "a parent praying for a child who left home",
+    "someone learning to live with an empty chair",
+    "the worker coming home spent, finding strength for tomorrow",
+    "someone who failed, felt shame, and was taken back",
+    "the person praying at 3am because sleep won't come",
+    "someone caring for the sick while holding their own faith together",
+    "the young one who almost quit and stayed one more day",
+    "someone starting over with nothing left"
+  ],
+  "variacoes_estilo": [
+    "deep baritone, slide guitar up front, Hammond organ underneath, brushed drums, slow drag",
+    "mid-range voice, fingerpicked guitar leading, organ low in the mix, slightly brighter tempo",
+    "nearly acoustic: guitar and voice, organ only on the last chorus, no drums",
+    "full band, church choir response on the final chorus, Hammond wide open",
+    "very slow and intimate, close-mic vocal, soft strings underneath, no percussion"
+  ],
+  "style_base": "Vintage gospel blues, American English, warm analog tape, church atmosphere, no digital sheen"
 }
