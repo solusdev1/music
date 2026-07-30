@@ -1,7 +1,7 @@
 {
-  "niche": "country_blues_fe",
-  "nome_exibicao": "Country Blues e Fé",
-  "canal": "Country Blues e Fé",
+  "niche": "estrada_da_fe",
+  "nome_exibicao": "Estrada da Fé",
+  "canal": "Estrada da Fé",
   "idioma": "pt-BR",
   "songs_per_day": 5,
   "target_sec": 3600,
@@ -9,32 +9,32 @@
   "cooldown_tema_dias": 60,
   "cooldown_gancho_dias": 30,
   "duracao_media_faixa_sec": 270,
-  "style_prompt": "Country blues gospel BR, slide guitar, órgão suave, barítono rouco, coral final, warm analog",
-  "exclude_styles": "EDM, trap, funk, rap, pop worship brilhante, autotune pesado, metal, bateria eletrônica, voz infantil",
-  "formula_titulo": "{GANCHO} 🙏 | 1 Hora de Country Blues Gospel Para {BENEFICIO}",
+  "style_prompt": "Gospel blues soul BR, guitarra elétrica limpa com bend, órgão Hammond, voz masculina soul rasgada, coro feminino de apoio, gravação quente de estúdio",
+  "exclude_styles": "country, sertanejo, viola caipira, slide guitar rural, EDM, trap, funk, rap, pop worship brilhante, autotune pesado, metal, bateria eletrônica",
+  "formula_titulo": "{GANCHO} 🙏 | {BENEFICIO}",
   "formula_alt": [
-    "{GANCHO} 🙏 | Playlist Country Gospel Blues Para {BENEFICIO}",
-    "{GANCHO} 🙏 | 1 Hora de Louvores Country Gospel Para {BENEFICIO}"
+    "{GANCHO} 🙏 | 1 Hora de Gospel Blues Para {BENEFICIO}",
+    "{GANCHO} 🙏 | Louvores de Gospel Blues Para {BENEFICIO}"
   ],
   "ganchos": [
-    "DEUS VIU SUA DOR",
-    "QUANDO A FORÇA ACABA, DEUS COMEÇA",
-    "SE O SEU CORAÇÃO ESTÁ CANSADO, OUÇA ISSO",
-    "DEUS VAI RENOVAR SUAS FORÇAS",
-    "QUANDO TUDO PARECIA PERDIDO",
-    "DEUS OUVIU SEU CHORO EM SILÊNCIO",
-    "QUANDO O MEDO CHEGAR",
-    "DESCANSE, DEUS AINDA ESTÁ CUIDANDO",
-    "QUANDO A ORAÇÃO NÃO TEM RESPOSTA",
-    "NÃO DESISTA, DEUS ESTÁ TRABALHANDO"
+    "FÉ QUE ACALMA A ALMA",
+    "FÉ QUE MOVE CÉUS",
+    "ALMAS RESTAURADAS",
+    "O SILÊNCIO DEPOIS DA TEMPESTADE",
+    "QUANDO A NOITE NÃO PASSA",
+    "ELE SUSTENTA QUEM JÁ NÃO TEM FORÇA",
+    "LOUVOR QUE ATRAVESSA A DOR",
+    "AINDA HÁ GRAÇA PARA VOCÊ",
+    "O QUE A ORAÇÃO FEZ POR MIM",
+    "DEUS NÃO SOLTOU A MINHA MÃO"
   ],
   "beneficios": [
-    "Acalmar o Coração e Renovar a Fé",
-    "Descansar em Deus",
-    "Dormir em Paz",
-    "Oração da Madrugada",
-    "Renovar Suas Forças",
-    "Alma Cansada"
+    "Louvores Que Tocam a Alma",
+    "Adoração e Descanso",
+    "Orar e Descansar",
+    "Renovar a Esperança",
+    "Noites Difíceis",
+    "Paz no Coração"
   ],
   "temas": [
     "Salmo 23 — o Senhor é meu pastor",
@@ -71,36 +71,32 @@
     "Apocalipse 21:4 — enxugará toda lágrima"
   ],
   "hashtags": [
-    "#CountryBluesEFé",
-    "#CountryBluesGospel",
-    "#CountryGospel",
     "#GospelBlues",
-    "#SertanejoGospel",
-    "#LouvoresParaAcalmarOCoração",
-    "#LouvoresParaDormir",
-    "#OraçãoDaMadrugada",
-    "#DeusCuidaDeMim",
-    "#RenovarAFé",
-    "#LouvorCountry"
+    "#LouvoresQueTocamAAlma",
+    "#MúsicaGospel",
+    "#AdoraçãoEDescanso",
+    "#GospelBluesBrasil",
+    "#LouvoresParaOrar",
+    "#PazNoCoração",
+    "#FéQueMoveCéus",
+    "#MúsicaCristã",
+    "#SoulGospel"
   ],
   "tags_youtube": [
-    "country blues gospel",
-    "country blues e fé",
-    "country gospel brasileiro",
-    "gospel blues brasileiro",
-    "sertanejo gospel raiz",
-    "louvores country gospel",
-    "louvores para acalmar o coração",
-    "louvores para dormir em paz",
-    "oração da madrugada",
-    "música gospel para renovar a fé",
-    "playlist gospel 1 hora",
-    "louvores para alma cansada",
-    "country gospel em português",
-    "louvor country para oração"
+    "gospel blues",
+    "gospel blues brasil",
+    "louvores que tocam a alma",
+    "música gospel para orar",
+    "adoração gospel blues",
+    "1 hora de gospel blues",
+    "louvores para descansar",
+    "soul gospel brasileiro",
+    "música cristã para orar",
+    "gospel blues português",
+    "louvores de madrugada"
   ],
-  "comentario_fixado": "🙏 Qual louvor desta playlist mais falou com o seu coração hoje?\nDeixe seu pedido de oração nos comentários. Vamos orar juntos.",
-  "prompt_thumbnail": "Homem rural de costas olhando pela janela de uma varanda à noite, Bíblia aberta sobre mesa de madeira, lamparina âmbar, chuva fina, cruz distante iluminada, atmosfera Country Blues Gospel brasileira, emoção, esperança, cinematic 16:9, high contrast, sem texto, sem logotipo.",
+  "comentario_fixado": "🙏 Qual louvor falou com você hoje?\nConta pra gente de onde você está ouvindo e deixe seu pedido de oração.",
+  "prompt_thumbnail": "Cantor de gospel blues ao microfone em salão de igreja urbana à noite, luz âmbar lateral, silhueta de cruz ao fundo, atmosfera soul, cinematic 16:9, alto contraste, sem texto, sem logotipo.",
   "palavras_protegidas": [
     "deus",
     "jesus",
@@ -137,28 +133,27 @@
   ],
   "cultura": {
     "referencias": [
+      "cidade à noite",
+      "janela do ônibus",
+      "hospital de madrugada",
+      "salão de igreja",
+      "microfone velho",
+      "chuva no asfalto",
+      "escada do prédio",
+      "despertador às 5h",
+      "oração no vestiário",
+      "volta pra casa depois do turno"
+    ],
+    "proibido": [
       "sertão",
       "roça",
       "viola caipira",
-      "varanda",
-      "poeira da estrada",
-      "terço",
-      "fogão a lenha",
       "carro de boi",
-      "chuva no telhado de zinco",
-      "igreja de interior"
-    ],
-    "proibido": [
+      "poeira da estrada",
       "front porch",
-      "dirt road americana",
-      "gospel choir do sul dos EUA",
-      "rancho mexicano",
-      "cidade à noite",
-      "ônibus",
-      "asfalto",
-      "prédio",
-      "vestiário"
+      "cotton field",
+      "rancho mexicano"
     ],
-    "nota": "Fé brasileira de interior: promessa, romaria, oração em voz alta na cozinha. Português coloquial do campo, sem gíria urbana."
+    "nota": "Fé brasileira URBANA e de periferia — trabalho, turno, ônibus, luta na cidade. Deliberadamente oposto ao Country Blues e Fé, que é do campo. Nunca usar imagem rural neste canal."
   }
 }

@@ -16,7 +16,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from core import brief, catalog, db, opportunity, playlist, quality  # noqa: E402
+from core import brief, catalog, db, learn, opportunity, playlist, quality  # noqa: E402
 
 BASE = Path(__file__).resolve().parent
 NICHES_DIR = BASE / "niches"
@@ -114,6 +114,20 @@ def cmd_set_theme_score(args, conn):
     print(f"✅ score {args.score} gravado para «{args.theme}» ({args.fonte})")
 
 
+def cmd_add_published(args, conn):
+    learn.add_published(conn, args.niche, args.title, args.date, args.views,
+                        comments=args.comments, duration=args.duration,
+                        video_url=args.url, hook=args.hook)
+    print(f"✅ registrado: {args.title[:50]} ({args.views} views em {args.date})")
+
+
+def cmd_learn(args, conn):
+    print(learn.format_report(conn, args.niche))
+    if args.sync_vph:
+        casados, total = learn.sync_vph(conn, args.niche)
+        print(f"\n🔗 VPH sincronizado: {casados} de {total} vídeo(s) casaram com faixas do catálogo")
+
+
 def cmd_status(args, conn):
     print("📊 MUSIC FACTORY\n")
     for n in conn.execute("SELECT niche, COUNT(*) c FROM tracks GROUP BY niche"):
@@ -183,6 +197,23 @@ def main(argv=None):
     s.add_argument("--keyword")
     s.add_argument("--fonte", default="vidiq")
     s.set_defaults(func=cmd_set_theme_score)
+
+    s = sub.add_parser("add-published", help="registra vídeo publicado (views reais)")
+    s.add_argument("--niche", required=True)
+    s.add_argument("--title", required=True)
+    s.add_argument("--date", required=True, help="AAAA-MM-DD")
+    s.add_argument("--views", type=int, required=True)
+    s.add_argument("--comments", type=int, default=0)
+    s.add_argument("--duration", help="1:54:49")
+    s.add_argument("--url")
+    s.add_argument("--hook", help="sobrescreve o gancho extraído do título")
+    s.set_defaults(func=cmd_add_published)
+
+    s = sub.add_parser("learn", help="desempenho real e colisão de ganchos")
+    s.add_argument("--niche", required=True)
+    s.add_argument("--sync-vph", action="store_true",
+                   help="copia views/dia para o catálogo (usado na abertura da playlist)")
+    s.set_defaults(func=cmd_learn)
 
     s = sub.add_parser("status", help="visão geral")
     s.set_defaults(func=cmd_status)

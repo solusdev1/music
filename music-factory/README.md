@@ -120,15 +120,28 @@ Para usar cron em vez de systemd:
 
 ---
 
-## Os 5 canais
+## Os 6 canais
 
-| Canal | Idioma | País | Formato | Grupo |
+| Canal | Idioma | Subgênero | Formato | Status |
 |---|---|---|---|---|
-| Country Blues e Fé | pt-BR | BR | canção | country_blues_gospel |
-| Blues & Praises | en-US | US | canção | country_blues_gospel |
-| Blues & Alabanzas | es-419 | MX | canção | country_blues_gospel |
-| Southern Country Blues Gospel | en-US | US | canção | country_blues_gospel |
-| Peaceful Deep Sleep Music | en-US | US | **instrumental** | — |
+| Country Blues e Fé | pt-BR | country/sertanejo raiz | canção | **244 v/dia** |
+| Estrada da Fé | pt-BR | gospel blues soul urbano | canção | 21 v/dia |
+| El Camino de la Fé | es-419 | gospel blues | canção | 22 v/dia |
+| Blues & Praises | en-US | gospel blues de igreja | canção | novo |
+| Southern Country Blues Gospel | en-US | country gospel Appalachian | canção | novo |
+| Peaceful Deep Sleep Music | en-US | ambient/healing | **instrumental** | novo |
+
+### O par mais perigoso são os dois em português
+
+`country_blues_fe` e `estrada_da_fe` são o mesmo idioma, país e público —
+risco de colisão maior que qualquer par entre idiomas. Separados por
+subgênero e por cenário:
+
+- **Country Blues e Fé** → campo: sertão, roça, viola caipira, poeira da estrada
+- **Estrada da Fé** → cidade: turno, ônibus, asfalto, hospital de madrugada
+
+Cada um proíbe o repertório do outro, e o `exclude_styles` do Estrada da Fé
+lista `country, sertanejo, viola caipira` para o Suno não aproximar os dois.
 
 ### Como os canais ficam diferentes entre si
 
@@ -238,11 +251,37 @@ O tema do dia passa a ser **o de maior score que esteja fora do descanso** —
 demanda e anti-repetição combinadas. O `00-RESUMO-DO-DIA.md` sempre declara
 qual critério foi usado.
 
+## Aprendizado com desempenho real
+
+```bash
+python3 cli.py add-published --niche country_blues_fe \
+    --title "DEUS CONHECE SUA DOR 🙏 1H55 | Os Melhores Louvores" \
+    --date 2026-07-15 --views 8207 --comments 7 --duration "1:54:49"
+
+python3 cli.py learn --niche country_blues_fe --sync-vph
+```
+
+Ordena por **views/dia** (normaliza a idade do vídeo) e detecta ganchos
+reaproveitados cedo demais. Carregado com os dados reais dos canais, o
+primeiro relatório já mostrou o padrão:
+
+```
+⚠️  GANCHOS REAPROVEITADOS CEDO DEMAIS
+  «DEUS CONHECE SUA DOR» — 1d de intervalo: 547 → 86 v/dia (16% do primeiro)
+  «FÉ QUE ACALMA A ALMA» — 3d de intervalo:  40 → 21 v/dia (52% do primeiro)
+```
+
+Dois canais, mesmo padrão: repetir o gancho em poucos dias derruba o segundo
+vídeo. É o que o `cooldown_gancho_dias` (30) impede.
+
+`--sync-vph` copia views/dia para o catálogo, fazendo a regra "abrir a
+playlist pela faixa de maior VPH" usar desempenho real em vez de zero.
+
 ## Próximas fases
 
 | Fase | Entrega |
 |---|---|
 | 3 | Coleta automática de oportunidade (VIDIQ semanal dentro da cota) |
-| 4 | `learn.py` — ranking de fórmulas de título por VPH real dos canais |
+| 4 | Ingestão automática de métricas (yt-dlp/API) alimentando `learn` |
 
 Renderização de vídeo e upload **não estão no roadmap** — feitos manualmente.
