@@ -9,16 +9,13 @@
   "cooldown_tema_dias": 60,
   "cooldown_gancho_dias": 30,
   "duracao_media_faixa_sec": 270,
-
   "style_prompt": "Country blues gospel BR, slide guitar, órgão suave, barítono rouco, coral final, warm analog",
   "exclude_styles": "EDM, trap, funk, rap, pop worship brilhante, autotune pesado, metal, bateria eletrônica, voz infantil",
-
   "formula_titulo": "{GANCHO} 🙏 | 1 Hora de Country Blues Gospel Para {BENEFICIO}",
   "formula_alt": [
     "{GANCHO} 🙏 | Playlist Country Gospel Blues Para {BENEFICIO}",
     "{GANCHO} 🙏 | 1 Hora de Louvores Country Gospel Para {BENEFICIO}"
   ],
-
   "ganchos": [
     "DEUS VIU SUA DOR",
     "QUANDO A FORÇA ACABA, DEUS COMEÇA",
@@ -31,7 +28,6 @@
     "QUANDO A ORAÇÃO NÃO TEM RESPOSTA",
     "NÃO DESISTA, DEUS ESTÁ TRABALHANDO"
   ],
-
   "beneficios": [
     "Acalmar o Coração e Renovar a Fé",
     "Descansar em Deus",
@@ -40,7 +36,6 @@
     "Renovar Suas Forças",
     "Alma Cansada"
   ],
-
   "temas": [
     "Salmo 23 — o Senhor é meu pastor",
     "Salmo 91 — proteção na estrada escura",
@@ -55,23 +50,51 @@
     "Filipenses 4:13 — posso todas as coisas",
     "Salmo 51 — cria em mim um coração puro"
   ],
-
   "hashtags": [
-    "#CountryBluesEFé", "#CountryBluesGospel", "#CountryGospel", "#GospelBlues",
-    "#SertanejoGospel", "#LouvoresParaAcalmarOCoração", "#LouvoresParaDormir",
-    "#OraçãoDaMadrugada", "#DeusCuidaDeMim", "#RenovarAFé", "#LouvorCountry"
+    "#CountryBluesEFé",
+    "#CountryBluesGospel",
+    "#CountryGospel",
+    "#GospelBlues",
+    "#SertanejoGospel",
+    "#LouvoresParaAcalmarOCoração",
+    "#LouvoresParaDormir",
+    "#OraçãoDaMadrugada",
+    "#DeusCuidaDeMim",
+    "#RenovarAFé",
+    "#LouvorCountry"
   ],
-
   "tags_youtube": [
-    "country blues gospel", "country blues e fé", "country gospel brasileiro",
-    "gospel blues brasileiro", "sertanejo gospel raiz", "louvores country gospel",
-    "louvores para acalmar o coração", "louvores para dormir em paz",
-    "oração da madrugada", "música gospel para renovar a fé",
-    "playlist gospel 1 hora", "louvores para alma cansada",
-    "country gospel em português", "louvor country para oração"
+    "country blues gospel",
+    "country blues e fé",
+    "country gospel brasileiro",
+    "gospel blues brasileiro",
+    "sertanejo gospel raiz",
+    "louvores country gospel",
+    "louvores para acalmar o coração",
+    "louvores para dormir em paz",
+    "oração da madrugada",
+    "música gospel para renovar a fé",
+    "playlist gospel 1 hora",
+    "louvores para alma cansada",
+    "country gospel em português",
+    "louvor country para oração"
   ],
-
   "comentario_fixado": "🙏 Qual louvor desta playlist mais falou com o seu coração hoje?\nDeixe seu pedido de oração nos comentários. Vamos orar juntos.",
-
-  "prompt_thumbnail": "Homem rural de costas olhando pela janela de uma varanda à noite, Bíblia aberta sobre mesa de madeira, lamparina âmbar, chuva fina, cruz distante iluminada, atmosfera Country Blues Gospel brasileira, emoção, esperança, cinematic 16:9, high contrast, sem texto, sem logotipo."
+  "prompt_thumbnail": "Homem rural de costas olhando pela janela de uma varanda à noite, Bíblia aberta sobre mesa de madeira, lamparina âmbar, chuva fina, cruz distante iluminada, atmosfera Country Blues Gospel brasileira, emoção, esperança, cinematic 16:9, high contrast, sem texto, sem logotipo.",
+  "palavras_protegidas": [
+    "deus",
+    "jesus",
+    "senhor",
+    "cristo",
+    "espirito",
+    "fe",
+    "graca",
+    "louvor",
+    "oracao",
+    "salmo",
+    "amem",
+    "cruz",
+    "ceu",
+    "alma"
+  ]
 }

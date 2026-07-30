@@ -1,4 +1,7 @@
-# Music Factory — Fase 1
+# Music Factory
+
+**Foco: qualidade da música e oportunidade.** Renderização e upload de vídeo
+ficam fora — são feitos manualmente.
 
 Motor de produção diária para canais de música. Resolve o que faltava: **estado**.
 
@@ -19,6 +22,8 @@ Zero dependências externas: Python 3 puro (`sqlite3`, `json`, `argparse`).
 | **Montador de playlist** | Sequência de 1h com regras + chapters com timestamps |
 | **Pauta diária** | Pasta pronta por nicho: tema do dia, títulos, prompt de letras, metadados |
 | **Rodar sozinho** | `systemd` timer diário às 06:00, um nicho quebrado não derruba os outros |
+| **Qualidade** | Lê TODAS as letras do acervo e acusa imagens, rimas e títulos gastos |
+| **Oportunidade** | Tema do dia escolhido por demanda real (cache semanal), não por rodízio |
 
 ### Regras do montador
 
@@ -144,10 +149,56 @@ Todos os cenários abaixo foram executados, incluindo os de borda:
 
 ---
 
+## Qualidade — o que só é possível tendo o catálogo
+
+Com 5 músicas/dia, a ameaça à qualidade não é a letra isolada sair ruim: é o
+acervo inteiro convergir para as mesmas imagens e as mesmas rimas. Nas 5
+primeiras letras do canal, **"cheiro" aparece em 5 de 5** e as terminações
+`-nho` e `-rar` em 4 de 5.
+
+```bash
+python3 cli.py quality --niche country_blues_fe
+```
+
+Detecta:
+- **Imagens saturadas** — por presença por música, não contagem bruta (uma
+  palavra 20x numa letra é estilo; em 8 de 10 letras é vício)
+- **Terminações de verso viciadas** — rimas que fecham todo verso igual
+- **Colisão de títulos** — músicas que canibalizam a busca uma da outra
+
+Três filtros evitam ruído: `palavras_protegidas` do nicho (num canal gospel,
+repetir "Deus" é o assunto, não defeito), stopwords com verbos conjugados
+("quis", "veio" são gramática, não cenário) e mínimo de 3 músicas para entrar
+na lista (2 de 5 é coincidência). Abaixo de 8 letras o relatório se declara
+indicativo em vez de diagnóstico.
+
+**O resultado entra sozinho no prompt do dia**, como bloco de anti-repetição.
+
+## Oportunidade — tema por demanda, não por rodízio
+
+A conta VIDIQ tem teto de **150 créditos/semana** e cada consulta custa 5 —
+cerca de 30 consultas semanais no total. Um job diário que consultasse a API
+queimaria a cota em dois dias.
+
+Por isso a coleta é **semanal e vai para cache**; a pauta diária lê só o cache
+e **nunca gasta crédito**. Sem cache válido (>14 dias ou vazio), o sistema cai
+no rodízio simples e **diz isso em voz alta** em vez de fingir que tem dado.
+
+```bash
+python3 cli.py opportunity --niche country_blues_fe        # ranking atual
+python3 cli.py set-theme-score --niche country_blues_fe \
+    --theme "Salmo 91 — proteção na estrada escura" --score 87
+```
+
+O tema do dia passa a ser **o de maior score que esteja fora do descanso** —
+demanda e anti-repetição combinadas. O `00-RESUMO-DO-DIA.md` sempre declara
+qual critério foi usado.
+
 ## Próximas fases
 
 | Fase | Entrega |
 |---|---|
-| 2 | `render.py` — ffmpeg concatena áudios + loop de fundo → MP4 de 1h |
-| 3 | `snapshot.py` (VIDIQ/yt-dlp) + `learn.py` — ranking de fórmulas por VPH real |
-| 4 | Upload automático via YouTube Data API v3 (OAuth uma vez) |
+| 3 | Coleta automática de oportunidade (VIDIQ semanal dentro da cota) |
+| 4 | `learn.py` — ranking de fórmulas de título por VPH real dos canais |
+
+Renderização de vídeo e upload **não estão no roadmap** — feitos manualmente.

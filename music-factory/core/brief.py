@@ -10,7 +10,7 @@ import json
 from datetime import date
 from pathlib import Path
 
-from . import catalog, playlist
+from . import catalog, opportunity, playlist, quality
 
 
 def load_niche(niches_dir, niche):
@@ -41,7 +41,30 @@ def make_titles(conn, cfg, n=3):
     return titulos
 
 
-def lyrics_prompt(cfg, tema, n_musicas, titulos):
+def _bloco_qualidade(evitar):
+    """Trecho do prompt que carrega o aprendizado do acervo."""
+    if not evitar or evitar["n_musicas"] == 0:
+        return ""
+    partes = [
+        f"\n## ⚠️ ANTI-REPETIÇÃO (extraído de {evitar['n_musicas']} letras já no acervo)",
+        "Estes recursos já estão gastos. **Não use** — encontre imagem nova para a mesma emoção.",
+    ]
+    if evitar["palavras"]:
+        partes.append(f"\n**Imagens saturadas:** {', '.join(evitar['palavras'])}")
+    if evitar["rimas"]:
+        partes.append(
+            f"**Terminações de verso viciadas:** {', '.join(evitar['rimas'])} "
+            "— varie a rima, não feche todo verso igual."
+        )
+    partes.append(
+        "\nSe a emoção pedir uma dessas imagens, troque o ângulo concreto: "
+        "em vez de repetir o objeto, mostre o gesto de alguém diante dele, "
+        "ou o detalhe que ninguém repara na mesma cena."
+    )
+    return "\n".join(partes)
+
+
+def lyrics_prompt(cfg, tema, n_musicas, titulos, evitar=None):
     """Prompt pronto para colar no Claude e receber as letras do dia."""
     return f"""# PAUTA DE LETRAS — {cfg['nome_exibicao']} — {date.today().isoformat()}
 
@@ -59,8 +82,11 @@ Gere **{n_musicas} letras completas** para Suno, canal "{cfg['canal']}" ({cfg['i
 - Estrutura com metatags Suno: [Intro], [Verse 1], [Pre-Chorus], [Chorus],
   [Verse 2], [Bridge], [Final Chorus], [Outro].
 - Refrão repetível e fácil de lembrar (é playlist, não single).
-- Linguagem concreta e rural: estrada, lamparina, poeira, chuva, varanda, mesa.
+- Registro rural e caseiro, mas **sem repetir o repertório já gasto** — veja a
+  lista de imagens saturadas abaixo antes de escolher o cenário.
 - Não inventar citação bíblica. O tema é inspiração, não citação literal.
+- Imagem concreta vence abstração: "a caneca esfriou devagar" vale mais que
+  "a tristeza me tomou". Uma cena por verso.
 - Variar o papel de cada música dentro da playlist:
   1. retenção (energia média, refrão forte)
   2. narrativa (história/testemunho, puxa comentário)
@@ -76,6 +102,8 @@ LETRA:
 [Intro]
 ...
 ```
+
+{_bloco_qualidade(evitar)}
 
 ## Títulos de playlist já reservados (não repetir gancho)
 {chr(10).join('- ' + t['titulo'] for t in titulos)}
@@ -116,11 +144,20 @@ def generate(conn, cfg, out_root, *, today=None, n_songs=None):
     niche = cfg["niche"]
     avisos = []
 
-    tema, aviso_tema = catalog.pick_theme(
-        conn, niche, cfg["temas"], cooldown_days=cfg.get("cooldown_tema_dias", 60)
+    cooldown_tema = cfg.get("cooldown_tema_dias", 60)
+    tema, motivo = opportunity.pick_theme_by_opportunity(
+        conn, niche, cfg["temas"], cooldown_days=cooldown_tema
     )
-    if aviso_tema:
-        avisos.append(aviso_tema)
+    if tema:
+        criterio = f"maior oportunidade — {motivo}"
+    else:
+        avisos.append(f"tema por rodízio simples (sem dado de oportunidade: {motivo})")
+        tema, aviso_tema = catalog.pick_theme(
+            conn, niche, cfg["temas"], cooldown_days=cooldown_tema
+        )
+        criterio = f"rodízio — não usado nos últimos {cooldown_tema} dias"
+        if aviso_tema:
+            avisos.append(aviso_tema)
 
     titulos = make_titles(conn, cfg)
 
@@ -148,8 +185,15 @@ def generate(conn, cfg, out_root, *, today=None, n_songs=None):
     out = Path(out_root) / today / niche
     (out / "playlist").mkdir(parents=True, exist_ok=True)
 
+    evitar = quality.avoid_list(conn, niche, protegidas=cfg.get("palavras_protegidas", ()))
+    if evitar["palavras"]:
+        avisos.append(
+            f"{len(evitar['palavras'])} imagem(ns) saturada(s) no acervo "
+            f"({', '.join(evitar['palavras'][:5])}…) — o prompt já manda evitar."
+        )
+
     (out / "01-PROMPT-PARA-CLAUDE-LETRAS.md").write_text(
-        lyrics_prompt(cfg, tema, n_songs, titulos), encoding="utf-8")
+        lyrics_prompt(cfg, tema, n_songs, titulos, evitar), encoding="utf-8")
     p = out / "playlist"
     p.joinpath("titulo-variacoes.txt").write_text(
         "\n".join(f"{i}. {t['titulo']}" for i, t in enumerate(titulos, 1)), encoding="utf-8")
@@ -166,7 +210,7 @@ def generate(conn, cfg, out_root, *, today=None, n_songs=None):
 
 ## Tema escolhido
 **{tema}**
-_Selecionado automaticamente: não usado nos últimos {cfg.get('cooldown_tema_dias', 60)} dias._
+_Critério: {criterio}._
 
 ## Playlist planejada
 - Faixas: **{len(plano['sequence'])}** ({novas} novas + {len(plano['sequence']) - novas} do acervo)

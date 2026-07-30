@@ -16,7 +16,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from core import brief, catalog, db, playlist  # noqa: E402
+from core import brief, catalog, db, opportunity, playlist, quality  # noqa: E402
 
 BASE = Path(__file__).resolve().parent
 NICHES_DIR = BASE / "niches"
@@ -93,6 +93,26 @@ def cmd_catalog(args, conn):
     print(f"\n{len(rows)} faixa(s). (*) duração estimada")
 
 
+def cmd_quality(args, conn):
+    try:
+        cfg = brief.load_niche(args.niches_dir, args.niche)
+        prot = cfg.get("palavras_protegidas", ())
+    except FileNotFoundError:
+        prot = ()
+    print(quality.format_report(conn, args.niche, protegidas=prot))
+
+
+def cmd_opportunity(args, conn):
+    cfg = brief.load_niche(args.niches_dir, args.niche)
+    print(opportunity.format_report(conn, args.niche, cfg["temas"]))
+
+
+def cmd_set_theme_score(args, conn):
+    opportunity.save_theme_score(conn, args.niche, args.theme, args.score,
+                                 keyword=args.keyword, fonte=args.fonte)
+    print(f"✅ score {args.score} gravado para «{args.theme}» ({args.fonte})")
+
+
 def cmd_status(args, conn):
     print("📊 MUSIC FACTORY\n")
     for n in conn.execute("SELECT niche, COUNT(*) c FROM tracks GROUP BY niche"):
@@ -146,6 +166,22 @@ def main(argv=None):
     s = sub.add_parser("catalog", help="lista o catálogo")
     s.add_argument("--niche")
     s.set_defaults(func=cmd_catalog)
+
+    s = sub.add_parser("quality", help="saturação de imagens, rimas e títulos")
+    s.add_argument("--niche", required=True)
+    s.set_defaults(func=cmd_quality)
+
+    s = sub.add_parser("opportunity", help="ranking de temas por demanda real")
+    s.add_argument("--niche", required=True)
+    s.set_defaults(func=cmd_opportunity)
+
+    s = sub.add_parser("set-theme-score", help="grava score de oportunidade de um tema")
+    s.add_argument("--niche", required=True)
+    s.add_argument("--theme", required=True)
+    s.add_argument("--score", type=float, required=True)
+    s.add_argument("--keyword")
+    s.add_argument("--fonte", default="vidiq")
+    s.set_defaults(func=cmd_set_theme_score)
 
     s = sub.add_parser("status", help="visão geral")
     s.set_defaults(func=cmd_status)
