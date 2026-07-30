@@ -1,0 +1,44 @@
+════════════════════════════════════════════════════════════════
+ SOUTHERN GRACE ROADS — LOTE DE 30/07/2026
+ Tema do lote: Psalm 23 — the Lord is my shepherd
+════════════════════════════════════════════════════════════════
+
+AS 5 FAIXAS
+
+ 1. I Ain't Walkin' It Alone          ainda no meio da luta, sem resposta
+ 2. Mercy Followed Me Home             olhando pra trás anos depois, grato
+ 3. I Left The Porch Light On For You  pai/mãe rezando pelo filho que saiu
+ 4. He Set The Table Anyway            a cadeira vazia à mesa de domingo
+ 5. Lay It Down By The Door            o trabalhador que chega exausto
+
+O Salmo 23 está nas cinco sem ser citado literalmente:
+  1 → o vale da sombra          2 → "goodness and mercy shall follow"
+  3 → o pastor que vai atrás    4 → a mesa preparada
+  5 → "he makes me lie down"
+
+COMO USAR NO SUNO
+  1. Abra o Suno em Custom Mode
+  2. Cada arquivo tem 3 blocos marcados — cole cada um no campo indicado:
+       STYLE   → campo "Style"
+       EXCLUDE → campo "Exclude Styles"
+       LYRICS  → campo "Lyrics"
+  3. Gere pelo menos 2 versões por faixa e escolha a melhor
+
+ORDEM SUGERIDA NA PLAYLIST
+  Comece pela 2 (fiddle, mid tempo — segura os primeiros 30s)
+  Feche com a 5 (quase a capela — mood calm)
+  As outras no meio, alternando andamento
+
+CADA FAIXA TEM SOM PRÓPRIO — de propósito
+  1 dobro, voz grave, vassourinha        4 harmonia de família, palmas, banda
+  2 fiddle, contrabaixo caminhando       5 quase a capela, hino lento
+  3 violão e voz, pedal steel no fim
+
+  A identidade do canal é a mesma nas cinco (southern country gospel blues,
+  gravação seca, clima de varanda). O que muda é a instrumentação, para o
+  Suno não devolver a mesma faixa cinco vezes.
+
+O QUE EVITAR NO PRÓXIMO LOTE
+  Rodei o controle de qualidade sobre estas 5 letras. Já aparecem em 60%
+  ou mais: empty, room, through. E as terminações -day, -ore, -ome, -one.
+  O sistema já vai mandar evitar isso automaticamente na próxima pauta.
