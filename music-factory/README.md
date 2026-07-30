@@ -120,6 +120,50 @@ Para usar cron em vez de systemd:
 
 ---
 
+## Os 5 canais
+
+| Canal | Idioma | País | Formato | Grupo |
+|---|---|---|---|---|
+| Country Blues e Fé | pt-BR | BR | canção | country_blues_gospel |
+| Blues & Praises | en-US | US | canção | country_blues_gospel |
+| Blues & Alabanzas | es-419 | MX | canção | country_blues_gospel |
+| Southern Country Blues Gospel | en-US | US | canção | country_blues_gospel |
+| Peaceful Deep Sleep Music | en-US | US | **instrumental** | — |
+
+### Como os canais ficam diferentes entre si
+
+Três mecanismos, porque só traduzir não resolve:
+
+**1. Duas janelas de descanso de tema.** Dentro do canal, 60 dias (o mesmo
+público voltaria a ver o mesmo assunto). Entre canais irmãos, 14 dias — basta
+não saírem na mesma semana. Com janela única, 4 canais consumindo 1 tema/dia
+esgotariam qualquer banco em dias.
+
+**2. Bloco de cultura por canal.** Cada config declara o repertório de imagens
+nativas e o que é **transposição proibida**. Os dois canais em inglês não
+compartilham nenhuma imagem:
+
+- *Blues & Praises* → revival tent, church pew, choir loft, river baptism
+- *Southern* → Appalachian hollow, tobacco barn, coal town, grandmother's hymnbook
+
+E cada um proíbe explicitamente o repertório do outro. O PT proíbe "front
+porch"; o ES proíbe "sertão" e "front porch"; o Southern proíbe "church pew".
+
+**3. Aviso de canal irmão no prompt.** Quando o tema pode ter saído noutro
+idioma, o prompt manda mudar ângulo narrativo, cenário e personagem —
+"mesma verdade, outra história" — em vez de traduzir.
+
+A identidade sonora também separa: *Blues & Praises* é órgão Hammond de
+igreja; *Southern* é dobro, pedal steel e fiddle de varanda, com
+`Hammond organ church gospel` na lista de exclude.
+
+### Canal instrumental
+
+`peaceful_deep_sleep` usa `"formato": "instrumental"`. O prompt muda sozinho:
+pede **direção sonora** (instrumentação, andamento, arco dinâmico) em vez de
+letra, o banco de temas é sensorial em vez de bíblico, as faixas são longas
+(15 min) e há regra explícita de **nunca prometer efeito médico**.
+
 ## Novo nicho
 
 Copie `niches/country_blues_fe.json` e ajuste. Campos que importam:

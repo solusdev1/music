@@ -23,6 +23,21 @@ def load_niche(niches_dir, niche):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def load_group(niches_dir, cfg):
+    """Nichos irmãos (mesmo `grupo`), incluindo o próprio. Sem grupo: só ele."""
+    grupo = cfg.get("grupo")
+    if not grupo:
+        return [cfg["niche"]], []
+    irmaos, nomes = [], []
+    for path in sorted(Path(niches_dir).glob("*.json")):
+        outro = json.loads(path.read_text(encoding="utf-8"))
+        if outro.get("grupo") == grupo:
+            irmaos.append(outro["niche"])
+            if outro["niche"] != cfg["niche"]:
+                nomes.append(outro.get("nome_exibicao", outro["niche"]))
+    return irmaos or [cfg["niche"]], nomes
+
+
 def make_titles(conn, cfg, n=3):
     """Gera títulos evitando ganchos usados recentemente."""
     ganchos = catalog.pick_hook(
@@ -64,11 +79,74 @@ def _bloco_qualidade(evitar):
     return "\n".join(partes)
 
 
-def lyrics_prompt(cfg, tema, n_musicas, titulos, evitar=None):
-    """Prompt pronto para colar no Claude e receber as letras do dia."""
-    return f"""# PAUTA DE LETRAS — {cfg['nome_exibicao']} — {date.today().isoformat()}
+def _bloco_cultura(cfg):
+    """Registro cultural do canal — o que faz a letra soar nativa, não traduzida."""
+    cul = cfg.get("cultura") or {}
+    if not cul:
+        return ""
+    L = [f"\n## 🌎 CULTURA — {cfg.get('pais', '?')} / {cfg.get('idioma', '?')}"]
+    L.append(
+        "Escreva **nativo deste país**, não traduzido. A mesma emoção existe em "
+        "toda cultura, mas as imagens que a carregam mudam."
+    )
+    if cul.get("referencias"):
+        L.append(f"\n**Repertório de imagens desta cultura:** {', '.join(cul['referencias'])}")
+    if cul.get("proibido"):
+        L.append(
+            f"**Não transponha de outra cultura:** {', '.join(cul['proibido'])} "
+            "— soam falsos neste canal."
+        )
+    if cul.get("nota"):
+        L.append(f"\n{cul['nota']}")
+    return "\n".join(L)
 
-Gere **{n_musicas} letras completas** para Suno, canal "{cfg['canal']}" ({cfg['idioma']}).
+
+def _bloco_irmaos(cfg, tema, irmaos):
+    """Aviso de canais irmãos — impede que o mesmo tema vire a mesma música."""
+    if not irmaos:
+        return ""
+    return (
+        f"\n## ⚠️ CANAIS IRMÃOS\n"
+        f"Este grupo tem também: {', '.join(irmaos)}.\n"
+        f"O tema «{tema}» pode já ter sido usado lá em outro idioma. "
+        "Não escreva uma versão traduzida: mude o ângulo narrativo, o cenário "
+        "e o personagem. Mesma verdade, outra história."
+    )
+
+
+def lyrics_prompt(cfg, tema, n_musicas, titulos, evitar=None, irmaos=()):
+    """Prompt do dia, montado a partir da config do nicho."""
+    instrumental = cfg.get("formato") == "instrumental"
+    unidade = "faixas instrumentais" if instrumental else "letras completas"
+
+    regras = list(cfg.get("regras_extra", []))
+    papeis = cfg.get("papeis", [])
+    bloco_papeis = ""
+    if papeis:
+        bloco_papeis = "\n- Varie o papel de cada faixa na playlist:\n" + "\n".join(
+            f"  {i}. {p}" for i, p in enumerate(papeis, 1)
+        )
+
+    if instrumental:
+        formato_saida = """```
+TITULO: ...
+MOOD: retain|open|calm
+ESTRUTURA: [Intro Xmin][Tema Ymin][Sustain Zmin][Fade Wmin]
+DIREÇÃO SONORA: instrumentos, andamento, arco dinâmico
+```"""
+    else:
+        formato_saida = """```
+TITULO: ...
+MOOD: retain|open|calm
+LETRA:
+[Intro]
+...
+```"""
+
+    return f"""# PAUTA — {cfg['nome_exibicao']} — {date.today().isoformat()}
+
+Gere **{n_musicas} {unidade}** para Suno, canal "{cfg['canal']}".
+Idioma: **{cfg.get('idioma', 'pt-BR')}** · País-alvo: **{cfg.get('pais', 'BR')}**
 
 **Tema do dia:** {tema}
 
@@ -78,37 +156,22 @@ Gere **{n_musicas} letras completas** para Suno, canal "{cfg['canal']}" ({cfg['i
 **Exclude styles:**
 {cfg['exclude_styles']}
 
+## Estrutura
+{cfg.get('estrutura', '[Intro] [Verse 1] [Chorus] [Verse 2] [Bridge] [Final Chorus] [Outro]')}
+
 ## Regras
-- Estrutura com metatags Suno: [Intro], [Verse 1], [Pre-Chorus], [Chorus],
-  [Verse 2], [Bridge], [Final Chorus], [Outro].
-- Refrão repetível e fácil de lembrar (é playlist, não single).
-- Registro rural e caseiro, mas **sem repetir o repertório já gasto** — veja a
-  lista de imagens saturadas abaixo antes de escolher o cenário.
-- Não inventar citação bíblica. O tema é inspiração, não citação literal.
-- Imagem concreta vence abstração: "a caneca esfriou devagar" vale mais que
-  "a tristeza me tomou". Uma cena por verso.
-- Variar o papel de cada música dentro da playlist:
-  1. retenção (energia média, refrão forte)
-  2. narrativa (história/testemunho, puxa comentário)
-  3. oração (lenta, íntima)
-  4. renovação (esperança, virada)
-  5. descanso (fecho calmo, quase ambiente) → marcar mood **calm**
-
-## Para cada música, devolva
-```
-TITULO: ...
-MOOD: retain|open|calm
-LETRA:
-[Intro]
-...
-```
-
+{chr(10).join('- ' + r for r in regras) if regras else '- (sem regras extras configuradas)'}{bloco_papeis}
+{_bloco_cultura(cfg)}
+{_bloco_irmaos(cfg, tema, irmaos)}
 {_bloco_qualidade(evitar)}
+
+## Para cada faixa, devolva
+{formato_saida}
 
 ## Títulos de playlist já reservados (não repetir gancho)
 {chr(10).join('- ' + t['titulo'] for t in titulos)}
 
-Depois de gerar, salve cada letra e rode:
+Depois de gerar, registre cada faixa:
 `python3 cli.py add-song --niche {cfg['niche']} --title "..." --mood ... --lyrics arquivo.txt`
 """
 
@@ -137,23 +200,34 @@ Música gerada com auxílio de inteligência artificial.
 """
 
 
-def generate(conn, cfg, out_root, *, today=None, n_songs=None):
+def generate(conn, cfg, out_root, *, today=None, n_songs=None, niches_dir=None):
     """Gera a pasta da pauta do dia. Retorna caminho e avisos."""
     today = today or date.today().isoformat()
     n_songs = n_songs or cfg.get("songs_per_day", 5)
     niche = cfg["niche"]
+    niches_dir = niches_dir or Path(__file__).resolve().parent.parent / "niches"
     avisos = []
 
     cooldown_tema = cfg.get("cooldown_tema_dias", 60)
+    grupo_niches, irmaos = load_group(niches_dir, cfg)
+    if irmaos:
+        avisos.append(
+            f"cooldown de tema compartilhado com {len(irmaos)} canal(is) irmão(s): "
+            f"{', '.join(irmaos)}"
+        )
     tema, motivo = opportunity.pick_theme_by_opportunity(
-        conn, niche, cfg["temas"], cooldown_days=cooldown_tema
+        conn, niche, cfg["temas"], cooldown_days=cooldown_tema,
+        grupo_niches=grupo_niches,
+        cooldown_grupo_days=cfg.get("cooldown_tema_grupo_dias", 14),
     )
     if tema:
         criterio = f"maior oportunidade — {motivo}"
     else:
         avisos.append(f"tema por rodízio simples (sem dado de oportunidade: {motivo})")
         tema, aviso_tema = catalog.pick_theme(
-            conn, niche, cfg["temas"], cooldown_days=cooldown_tema
+            conn, niche, cfg["temas"], cooldown_days=cooldown_tema,
+            grupo_niches=grupo_niches,
+            cooldown_grupo_days=cfg.get("cooldown_tema_grupo_dias", 14),
         )
         criterio = f"rodízio — não usado nos últimos {cooldown_tema} dias"
         if aviso_tema:
@@ -193,7 +267,7 @@ def generate(conn, cfg, out_root, *, today=None, n_songs=None):
         )
 
     (out / "01-PROMPT-PARA-CLAUDE-LETRAS.md").write_text(
-        lyrics_prompt(cfg, tema, n_songs, titulos, evitar), encoding="utf-8")
+        lyrics_prompt(cfg, tema, n_songs, titulos, evitar, irmaos), encoding="utf-8")
     p = out / "playlist"
     p.joinpath("titulo-variacoes.txt").write_text(
         "\n".join(f"{i}. {t['titulo']}" for i, t in enumerate(titulos, 1)), encoding="utf-8")

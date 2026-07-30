@@ -1,0 +1,121 @@
+{
+  "niche": "peaceful_deep_sleep",
+  "nome_exibicao": "Peaceful Deep Sleep Music",
+  "canal": "Peaceful Deep Sleep Music",
+  "idioma": "en-US",
+  "pais": "US",
+  "formato": "instrumental",
+  "songs_per_day": 3,
+  "target_sec": 3600,
+  "cooldown_faixa_dias": 28,
+  "cooldown_tema_dias": 45,
+  "cooldown_tema_grupo_dias": 0,
+  "cooldown_gancho_dias": 30,
+  "duracao_media_faixa_sec": 900,
+  "style_prompt": "[Instrumental] [No Vocals] Genre: Ambient Sleep Music, Healing Soundscape, Cinematic Calm. Mood: deeply relaxing, ethereal, safe, warm. Instruments: soft felt piano, warm analog pads, gentle rain texture, subtle low drone, very soft bell tones. Tempo: 60 BPM. Production: wide stereo, soft transients, no harsh highs, gentle reverb tail.",
+  "exclude_styles": "vocals, choir, spoken words, recognizable melody, pop drums, trap beat, aggressive percussion, upbeat rhythm, harsh synths, horror ambience, sudden impacts, loud risers, EDM drop, trailer drums, distorted bass, children voices",
+  "estrutura": "[Intro 2min] [Gentle Theme 8min] [Warm Sustain 20min] [Soft Rain Section 10min] [Fade 5min]",
+  "papeis": [
+    "abertura (mais íntima, piano quase sozinho)",
+    "sustentação (colchão longo e estável, sem eventos)",
+    "fecho (dissolve em silêncio) → mood **calm**"
+  ],
+  "regras_extra": [
+    "Sem vocais, sem palavra falada, sem melodia reconhecível de terceiros.",
+    "Nada de evento abrupto: sem impacto, riser, mudança de dinâmica ou corte seco.",
+    "O arco é de 40+ minutos — pense em textura que evolui, não em música com clímax.",
+    "**Nunca prometer efeito médico** (curar insônia, tratar ansiedade). Descreva ambiente, não terapia.",
+    "Entregue a direção sonora, não letra: instrumentação, andamento e arco dinâmico."
+  ],
+  "temas": [
+    "gentle rain on a cabin roof",
+    "drifting over a still lake at midnight",
+    "snow falling on an empty forest",
+    "warm firelight in a quiet room",
+    "distant ocean waves before dawn",
+    "fog rolling through a sleeping valley",
+    "a slow river under moonlight",
+    "wind through tall grass at night",
+    "an empty library after closing",
+    "first light on a mountain lake",
+    "soft thunder far away",
+    "a quiet garden after summer rain",
+    "starlight over open desert",
+    "the hour before sunrise",
+    "an old house settling at night",
+    "mist on a northern shore"
+  ],
+  "formula_titulo": "{GANCHO} 😴 | 1 Hour of {BENEFICIO}",
+  "formula_alt": [
+    "{GANCHO} · Deep Sleep Music for {BENEFICIO}",
+    "{GANCHO} 🌙 | Peaceful Ambient Music for {BENEFICIO}"
+  ],
+  "ganchos": [
+    "FALL ASLEEP IN 10 MINUTES",
+    "LET THE RAIN CARRY YOU TO SLEEP",
+    "TOO TIRED TO SLEEP? PLAY THIS",
+    "QUIET YOUR MIND TONIGHT",
+    "SOFT PIANO FOR A RESTLESS NIGHT",
+    "WHEN THE DAY WON'T LET GO",
+    "DRIFT AWAY SLOWLY",
+    "THE CALMEST HOUR OF THE NIGHT",
+    "SLEEP DEEPLY TONIGHT",
+    "A GENTLE END TO A LONG DAY"
+  ],
+  "beneficios": [
+    "Deep Sleep and Calm Breathing",
+    "Relaxation and Quiet Rest",
+    "Studying and Focus",
+    "Meditation and Stillness",
+    "Insomnia Nights",
+    "Reading and Winding Down"
+  ],
+  "cultura": {
+    "referencias": [
+      "rain",
+      "fireplace",
+      "lake",
+      "forest",
+      "snow",
+      "ocean",
+      "fog",
+      "moonlight",
+      "open window"
+    ],
+    "proibido": [
+      "religious imagery",
+      "lyrics of any kind",
+      "cultural folklore references"
+    ],
+    "nota": "Público Tier-1 (US/UK/CA/AU). Linguagem neutra e sensorial; o canal vende ambiente, não mensagem. Sem referência religiosa ou cultural específica."
+  },
+  "hashtags": [
+    "#SleepMusic",
+    "#DeepSleepMusic",
+    "#RelaxingMusic",
+    "#AmbientMusic",
+    "#CalmingMusic",
+    "#SleepSounds",
+    "#RainSounds",
+    "#MeditationMusic",
+    "#StudyMusic",
+    "#PeacefulPiano"
+  ],
+  "tags_youtube": [
+    "sleep music",
+    "deep sleep music",
+    "relaxing music",
+    "ambient sleep music",
+    "peaceful sleep music",
+    "soft piano sleep",
+    "rain sleep music",
+    "calming music",
+    "music for rest",
+    "sleep soundscape",
+    "instrumental sleep music",
+    "meditation music"
+  ],
+  "comentario_fixado": "🌙 Where are you listening from tonight?\nSleep well — and let us know what helped you rest.",
+  "prompt_thumbnail": "Still lake at night under soft moonlight, low mist over the water, distant pine treeline, deep blue and warm amber tones, no people, no structures, dreamlike and calm, cinematic 16:9, no text, no logo.",
+  "palavras_protegidas": []
+}

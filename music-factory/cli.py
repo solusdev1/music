@@ -25,7 +25,8 @@ OUT_ROOT = BASE / "out"
 
 def cmd_daily_brief(args, conn):
     cfg = brief.load_niche(args.niches_dir, args.niche)
-    r = brief.generate(conn, cfg, args.out, n_songs=args.songs)
+    r = brief.generate(conn, cfg, args.out, n_songs=args.songs,
+                       niches_dir=args.niches_dir)
     print(f"✅ Pauta gerada: {r['out_dir']}")
     print(f"   Tema: {r['tema']}")
     print(f"   Título: {r['titulos'][0]['titulo']}")

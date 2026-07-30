@@ -44,11 +44,31 @@
     "Salmo 121 — de onde vem o meu socorro",
     "João 14:27 — a paz que o mundo não pode dar",
     "Salmo 34:18 — perto dos que têm o coração quebrantado",
-    "Jeremias 29:11 — planos de paz e não de mal",
-    "Salmo 46 — Deus é o nosso refúgio e fortaleza",
+    "Jeremias 29:11 — planos de paz",
+    "Salmo 46 — Deus é refúgio e fortaleza",
     "Romanos 8:28 — todas as coisas cooperam para o bem",
     "Filipenses 4:13 — posso todas as coisas",
-    "Salmo 51 — cria em mim um coração puro"
+    "Salmo 51 — cria em mim um coração puro",
+    "Salmo 42 — como o cervo brama pelas águas",
+    "Isaías 41:10 — não temas, eu te ajudo",
+    "Salmo 27 — o Senhor é minha luz e salvação",
+    "Provérbios 3:5 — confia de todo o coração",
+    "Salmo 139 — tu me sondas e me conheces",
+    "2 Coríntios 12:9 — minha graça te basta",
+    "Salmo 30:5 — a alegria vem pela manhã",
+    "Josué 1:9 — sê forte e corajoso",
+    "Salmo 62 — só em Deus a minha alma descansa",
+    "Isaías 43:2 — quando passares pelas águas",
+    "Salmo 103 — bendize ó minha alma ao Senhor",
+    "Mateus 6:34 — não vos inquieteis pelo amanhã",
+    "Salmo 40 — esperei confiantemente pelo Senhor",
+    "Hebreus 11:1 — a fé é a certeza",
+    "Salmo 147:3 — sara os quebrantados de coração",
+    "Lucas 15 — o filho pródigo volta pra casa",
+    "Salmo 3 — tu és o escudo ao meu redor",
+    "Isaías 61 — beleza em vez de cinzas",
+    "Salmo 116 — ele inclinou os ouvidos a mim",
+    "Apocalipse 21:4 — enxugará toda lágrima"
   ],
   "hashtags": [
     "#CountryBluesEFé",
@@ -96,5 +116,44 @@
     "cruz",
     "ceu",
     "alma"
-  ]
+  ],
+  "grupo": "country_blues_gospel",
+  "cooldown_tema_grupo_dias": 14,
+  "formato": "cancao",
+  "estrutura": "[Intro] [Verse 1] [Pre-Chorus] [Chorus] [Verse 2] [Bridge] [Final Chorus] [Outro]",
+  "papeis": [
+    "retenção (energia média, refrão forte)",
+    "narrativa (história/testemunho, puxa comentário)",
+    "oração (lenta, íntima)",
+    "renovação (esperança, virada)",
+    "descanso (fecho calmo, quase ambiente) → mood **calm**"
+  ],
+  "pais": "BR",
+  "regras_extra": [
+    "Refrão repetível e fácil de lembrar (é playlist, não single).",
+    "Imagem concreta vence abstração: mostre a cena, não o sentimento. Uma cena por verso.",
+    "Não inventar citação bíblica. O tema é inspiração, não citação literal.",
+    "Registro do próprio país, sem repetir o repertório já gasto (ver anti-repetição)."
+  ],
+  "cultura": {
+    "referencias": [
+      "sertão",
+      "roça",
+      "viola caipira",
+      "varanda",
+      "poeira da estrada",
+      "terço",
+      "fogão a lenha",
+      "carro de boi",
+      "chuva no telhado de zinco",
+      "igreja de interior"
+    ],
+    "proibido": [
+      "front porch",
+      "dirt road americana",
+      "gospel choir do sul dos EUA",
+      "rancho mexicano"
+    ],
+    "nota": "Fé brasileira de interior: promessa, romaria, oração em voz alta na cozinha. Português coloquial do campo, sem gíria urbana."
+  }
 }

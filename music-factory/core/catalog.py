@@ -85,29 +85,74 @@ def eligible_tracks(conn, niche, *, cooldown_days=21, exclude_ids=()):
     return out
 
 
-def pick_theme(conn, niche, theme_bank, *, cooldown_days=60):
+def theme_usage_map(conn, niches):
+    """Último uso de cada tema no conjunto de nichos informado.
+
+    Recebe uma LISTA de nichos para permitir cooldown compartilhado entre
+    canais irmãos: se "Salmo 23" saiu hoje no canal PT, não deve sair
+    amanhã no EN — seriam a mesma música traduzida, não duas músicas.
+    """
+    if isinstance(niches, str):
+        niches = [niches]
+    ph = ",".join("?" * len(niches))
+    return {
+        r["theme"]: r["last"]
+        for r in conn.execute(
+            f"SELECT theme, MAX(used_at) AS last FROM theme_usage "
+            f"WHERE niche IN ({ph}) GROUP BY theme",
+            tuple(niches),
+        )
+    }
+
+
+def theme_filter(conn, niche, theme_bank, *, cooldown_days=60,
+                 grupo_niches=None, cooldown_grupo_days=14):
+    """Temas liberados hoje, checando as DUAS janelas de descanso.
+
+    São janelas diferentes de propósito. Dentro do próprio canal o tema
+    precisa descansar bastante (o mesmo público voltaria a ver o mesmo
+    assunto). Entre canais irmãos basta não sairem na mesma semana: são
+    públicos e idiomas distintos, e a orientação cultural do prompt já
+    garante que as músicas não fiquem iguais.
+
+    Com janela única, 4 canais consumindo 1 tema/dia esgotariam qualquer
+    banco em poucos dias.
+    """
+    agora = datetime.now(timezone.utc)
+    cutoff_self = (agora - timedelta(days=cooldown_days)).isoformat()
+    cutoff_grupo = (agora - timedelta(days=cooldown_grupo_days)).isoformat()
+
+    usado_self = theme_usage_map(conn, [niche])
+    irmaos = [n for n in (grupo_niches or []) if n != niche]
+    usado_grupo = theme_usage_map(conn, irmaos) if irmaos else {}
+
+    return [
+        t for t in theme_bank
+        if usado_self.get(t, "") <= cutoff_self
+        and usado_grupo.get(t, "") <= cutoff_grupo
+    ]
+
+
+def pick_theme(conn, niche, theme_bank, *, cooldown_days=60, grupo_niches=None,
+               cooldown_grupo_days=14):
     """Escolhe tema do dia evitando os usados recentemente.
 
     Se todos estiverem em descanso, devolve o menos-recentemente-usado
     (degrada em vez de travar) junto com um aviso.
     """
-    cutoff = (datetime.now(timezone.utc) - timedelta(days=cooldown_days)).isoformat()
-    used = {
-        r["theme"]: r["last"]
-        for r in conn.execute(
-            "SELECT theme, MAX(used_at) AS last FROM theme_usage WHERE niche=? GROUP BY theme",
-            (niche,),
-        )
-    }
-    livres = [t for t in theme_bank if used.get(t, "") <= cutoff]
+    used = theme_usage_map(conn, grupo_niches or [niche])
+    livres = theme_filter(conn, niche, theme_bank, cooldown_days=cooldown_days,
+                          grupo_niches=grupo_niches,
+                          cooldown_grupo_days=cooldown_grupo_days)
     if livres:
         return livres[0], None
     if not theme_bank:
         raise ValueError(f"banco de temas vazio para o nicho {niche!r}")
     antigo = min(theme_bank, key=lambda t: used.get(t, ""))
     return antigo, (
-        f"todos os {len(theme_bank)} temas usados nos últimos {cooldown_days} dias; "
-        f"reaproveitando o mais antigo. Amplie o theme_bank do nicho."
+        f"todos os {len(theme_bank)} temas em descanso (canal {cooldown_days}d / "
+        f"grupo {cooldown_grupo_days}d); reaproveitando o mais antigo. "
+        f"Amplie o theme_bank do nicho."
     )
 
 

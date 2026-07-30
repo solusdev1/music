@@ -113,7 +113,8 @@ def rank_themes(conn, niche, theme_bank):
     return com_score + sem_score, scores
 
 
-def pick_theme_by_opportunity(conn, niche, theme_bank, *, cooldown_days=60):
+def pick_theme_by_opportunity(conn, niche, theme_bank, *, cooldown_days=60,
+                              grupo_niches=None, cooldown_grupo_days=14):
     """Tema do dia = maior oportunidade FORA do período de descanso.
 
     Combina os dois eixos: demanda (score) e anti-repetição (cooldown).
@@ -126,16 +127,11 @@ def pick_theme_by_opportunity(conn, niche, theme_bank, *, cooldown_days=60):
         return None, st["motivo"]
 
     ranked, scores = rank_themes(conn, niche, theme_bank)
-    cutoff = (datetime.now(timezone.utc) - timedelta(days=cooldown_days)).isoformat()
-    usados = {
-        r["theme"]: r["last"]
-        for r in conn.execute(
-            "SELECT theme, MAX(used_at) AS last FROM theme_usage WHERE niche=? GROUP BY theme",
-            (niche,),
-        )
-    }
+    livres = set(catalog.theme_filter(
+        conn, niche, theme_bank, cooldown_days=cooldown_days,
+        grupo_niches=grupo_niches, cooldown_grupo_days=cooldown_grupo_days))
     for t in ranked:
-        if usados.get(t, "") <= cutoff:
+        if t in livres:
             return t, (f"score {scores[t]:.0f} (coleta de {st['idade_dias']}d atrás)"
                        if t in scores else "sem score; ordem do config")
     return None, "todos os temas com oportunidade estão em período de descanso"
