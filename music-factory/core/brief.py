@@ -262,7 +262,8 @@ def generate(conn, cfg, out_root, *, today=None, n_songs=None, niches_dir=None,
     out = Path(out_root) / today / niche
     out.mkdir(parents=True, exist_ok=True)
 
-    evitar = quality.avoid_list(conn, niche, protegidas=cfg.get("palavras_protegidas", ()))
+    evitar = quality.avoid_list(conn, niche, protegidas=cfg.get("palavras_protegidas", ()),
+                               idioma=cfg.get("idioma"))
     if evitar["palavras"]:
         avisos.append(
             f"{len(evitar['palavras'])} imagem(ns) saturada(s) no acervo "

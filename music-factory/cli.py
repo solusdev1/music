@@ -97,9 +97,10 @@ def cmd_quality(args, conn):
     try:
         cfg = brief.load_niche(args.niches_dir, args.niche)
         prot = cfg.get("palavras_protegidas", ())
+        idioma = cfg.get("idioma")
     except FileNotFoundError:
-        prot = ()
-    print(quality.format_report(conn, args.niche, protegidas=prot))
+        prot, idioma = (), None
+    print(quality.format_report(conn, args.niche, protegidas=prot, idioma=idioma))
 
 
 def cmd_opportunity(args, conn):
