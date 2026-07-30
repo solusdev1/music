@@ -16,7 +16,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from core import brief, catalog, db, learn, opportunity, playlist, quality  # noqa: E402
+from core import brief, catalog, db, learn, opportunity, playlist, quality, vidiq  # noqa: E402
 
 BASE = Path(__file__).resolve().parent
 NICHES_DIR = BASE / "niches"
@@ -170,6 +170,21 @@ def cmd_radar_approve(args, conn):
     print(f"✅ aprovada. Copie para o campo `temas` de niches/{args.niche}.json")
 
 
+def cmd_vidiq(args, conn):
+    print(vidiq.format_report(conn, args.niche))
+
+
+def cmd_vidiq_ingest(args, conn):
+    import json as _json
+    payload = _json.loads(Path(args.file).read_text(encoding="utf-8"))
+    if args.tipo == "keywords":
+        n = vidiq.ingest_keywords(conn, args.niche, payload, pais=args.pais)
+        print(f"✅ {n} keyword(s) gravada(s) em {args.niche}")
+    else:
+        n = vidiq.ingest_outliers(conn, args.niche, payload)
+        print(f"✅ {n} ideia(s) de outlier gravada(s) em {args.niche}")
+
+
 def cmd_status(args, conn):
     print("📊 MUSIC FACTORY\n")
     for n in conn.execute("SELECT niche, COUNT(*) c FROM tracks GROUP BY niche"):
@@ -292,6 +307,17 @@ def main(argv=None):
     s.add_argument("--niche", required=True)
     s.add_argument("--ideia", required=True)
     s.set_defaults(func=cmd_radar_approve)
+
+    s = sub.add_parser("vidiq", help="keywords coletadas e espaço aberto")
+    s.add_argument("--niche", required=True)
+    s.set_defaults(func=cmd_vidiq)
+
+    s = sub.add_parser("vidiq-ingest", help="ingere JSON do MCP VIDIQ")
+    s.add_argument("--niche", required=True)
+    s.add_argument("--file", required=True)
+    s.add_argument("--tipo", choices=["keywords", "outliers"], required=True)
+    s.add_argument("--pais")
+    s.set_defaults(func=cmd_vidiq_ingest)
 
     s = sub.add_parser("status", help="visão geral")
     s.set_defaults(func=cmd_status)

@@ -75,6 +75,23 @@ o sistema entrega o prompt em vez de fingir que gera letra boa em template.
 Para o pacote de playlist (título, descrição, hashtags, chapters), passe
 `--com-playlist`. Fora do caminho diário por decisão.
 
+## VIDIQ — demanda real por keyword
+
+```bash
+python3 cli.py vidiq --niche country_blues_fe
+python3 cli.py vidiq-ingest --niche X --file coleta.json --tipo keywords --pais BR
+```
+
+Cada consulta ao VIDIQ custa 5 créditos, então a coleta é **semanal** e vai
+para cache; a pauta diária lê só o banco. O módulo não chama o MCP — recebe o
+JSON e normaliza, o que o mantém testável sem rede e sem gastar crédito.
+
+O relatório separa **espaço aberto** (concorrência ≤30 com ≥3k buscas/mês) de
+**maior volume**, porque são decisões diferentes: uma é onde dá para entrar,
+a outra é onde está o público.
+
+Coleta de 2026-07-30 em `data/vidiq/` e `data/radar.db`.
+
 ## Radar — ideias novas de música
 
 ```bash
