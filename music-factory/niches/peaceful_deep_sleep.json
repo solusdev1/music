@@ -119,5 +119,6 @@
   "prompt_thumbnail": "Still lake at night under soft moonlight, low mist over the water, distant pine treeline, deep blue and warm amber tones, no people, no structures, dreamlike and calm, cinematic 16:9, no text, no logo.",
   "palavras_protegidas": [],
   "shorts_por_semana": 0,
-  "shorts_policy": "nenhum"
+  "shorts_policy": "nenhum",
+  "janela_decisao_dias": 60
 }

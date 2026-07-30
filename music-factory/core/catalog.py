@@ -219,3 +219,41 @@ def import_suno_folder(conn, folder, niche, *, default_duration=270):
             estimated=True,
         ))
     return importadas
+
+
+def migrate_tracks(conn, origem, destino, *, apenas_com_audio=True, reset_uso=True):
+    """Leva o acervo de um canal abandonado para o canal novo.
+
+    É o ativo que sobrevive à troca: o canal morre, as músicas não. As faixas
+    são COPIADAS (o histórico do canal antigo fica intacto para consulta) e,
+    por padrão, chegam sem histórico de uso — no canal novo o público é outro,
+    então o descanso de 21 dias não deve ser herdado.
+    """
+    filtro = "AND status IN ('audio_ok','published')" if apenas_com_audio else ""
+    rows = conn.execute(
+        f"SELECT * FROM tracks WHERE niche=? {filtro} ORDER BY vph DESC", (origem,)
+    ).fetchall()
+    if not rows:
+        raise LookupError(
+            f"nenhuma faixa elegível em {origem!r}"
+            + (" com áudio pronto" if apenas_com_audio else "")
+        )
+
+    migradas = []
+    for r in rows:
+        novo_slug = f"{destino}-{r['slug'].split('-', 1)[-1]}"
+        if conn.execute("SELECT 1 FROM tracks WHERE slug=?", (novo_slug,)).fetchone():
+            continue  # já migrada numa execução anterior
+        conn.execute(
+            """INSERT INTO tracks (slug, niche, title, theme, mood, style_prompt,
+                   exclude_styles, lyrics_path, duration_sec, duration_estimated,
+                   status, audio_path, vph, created_at)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (novo_slug, destino, r["title"], r["theme"], r["mood"], r["style_prompt"],
+             r["exclude_styles"], r["lyrics_path"], r["duration_sec"],
+             r["duration_estimated"], r["status"], r["audio_path"],
+             0 if reset_uso else r["vph"], now()),
+        )
+        migradas.append(r["title"])
+    conn.commit()
+    return migradas

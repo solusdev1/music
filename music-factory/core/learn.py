@@ -312,3 +312,141 @@ def cadence_report(conn, niche, *, hoje=None, shorts_por_semana=None):
         else:
             L.append(f"  Último Short há {gap} dia(s).")
     return "\n".join(L)
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SAÚDE DO CANAL E DECISÃO DE ABANDONO
+#
+# Estratégia do operador: canal que não entrega é abandonado, cria-se outro.
+# O papel do sistema é tornar essa decisão DATADA e comparável, em vez de
+# deixá-la à sensação — e evitar que se abandone cedo demais um canal que
+# ainda não teve janela, ou tarde demais um que já não responde.
+#
+# Cuidado metodológico: views/dia decai com a idade do vídeo (views são
+# front-loaded). Comparar um vídeo de 6 dias com um de 33 favorece o novo.
+# Por isso toda comparação aqui é feita dentro da MESMA faixa de idade.
+# ═══════════════════════════════════════════════════════════════════════════
+
+FAIXAS_IDADE = [(0, 7), (8, 15), (16, 30), (31, 60), (61, 10**6)]
+
+
+def _faixa(idade_dias):
+    for lo, hi in FAIXAS_IDADE:
+        if lo <= idade_dias <= hi:
+            return f"{lo}-{hi if hi < 10**6 else '+'}d"
+    return "?"
+
+
+def by_age_band(conn, niche, *, hoje=None):
+    """Mediana de v/dia por faixa de idade — única comparação honesta."""
+    hoje = hoje or date.today()
+    perf = performance(conn, niche, hoje=hoje, formato="long")
+    bandas = {}
+    for p in perf:
+        idade = max(1, (hoje - date.fromisoformat(p["published_at"])).days)
+        bandas.setdefault(_faixa(idade), []).append(p["vpd"])
+    return {b: sorted(v)[len(v) // 2] for b, v in bandas.items()}
+
+
+def channel_health(conn, niche, *, hoje=None, janela_decisao_dias=60,
+                   piso_vpd=None, referencia=None):
+    """Diagnóstico datado do canal.
+
+    NÃO calcula tendência a partir de um único snapshot. views/dia decai com
+    a idade do vídeo, então comparar "vídeos antigos vs recentes" faria todo
+    canal ativo parecer em crescimento — inclusive um que está caindo. Só o
+    que é apurável de um snapshot entra no veredito: dias sem postar e
+    desempenho relativo dentro da mesma faixa de idade.
+    """
+    hoje = hoje or date.today()
+    perf = performance(conn, niche, hoje=hoje, formato="long")
+    if not perf:
+        return {"niche": niche, "veredito": "SEM DADOS", "n_videos": 0,
+                "bandas": {}, "detalhe": "nenhum vídeo longo registrado"}
+
+    datas = sorted(date.fromisoformat(p["published_at"]) for p in perf)
+    idade_canal = (hoje - datas[0]).days
+    dias_sem_postar = (hoje - datas[-1]).days
+    bandas = by_age_band(conn, niche, hoje=hoje)
+    decidir_em = date.fromordinal(datas[0].toordinal() + janela_decisao_dias)
+
+    # desempenho relativo: só contra canal de referência NA MESMA faixa
+    rel = None
+    if referencia:
+        comuns = [b for b in bandas if b in referencia]
+        if comuns:
+            razoes = [bandas[b] / referencia[b] for b in comuns if referencia[b] > 0]
+            if razoes:
+                rel = sum(razoes) / len(razoes)
+
+    if dias_sem_postar > 30:
+        veredito = "PARADO"
+    elif piso_vpd and max(bandas.values()) < piso_vpd and idade_canal >= janela_decisao_dias:
+        veredito = "ABAIXO DO PISO"
+    elif rel is not None and rel < 0.25 and idade_canal >= janela_decisao_dias:
+        veredito = "MUITO ABAIXO"
+    elif rel is not None and rel < 0.6:
+        veredito = "ABAIXO"
+    elif idade_canal < janela_decisao_dias:
+        veredito = "EM JANELA"
+    else:
+        veredito = "ATIVO"
+
+    return {
+        "niche": niche, "veredito": veredito, "n_videos": len(perf),
+        "idade_canal_dias": idade_canal, "dias_sem_postar": dias_sem_postar,
+        "decidir_em": decidir_em.isoformat(),
+        "janela_vencida": idade_canal >= janela_decisao_dias,
+        "relativo": rel, "bandas": bandas,
+    }
+
+
+def health_report(conn, niches, *, hoje=None, janela=60, piso_vpd=None):
+    L = ["🩺 SAÚDE DOS CANAIS", ""]
+    L.append(f"  {'canal':<30} {'vídeos':>6} {'idade':>6} {'s/ postar':>10} "
+             f"{'vs melhor':>7} {'veredito':>15}")
+    L.append("  " + "-" * 82)
+    # canal de referência = melhor mediana por faixa entre todos
+    referencia = {}
+    for n in niches:
+        for b, v in by_age_band(conn, n, hoje=hoje).items():
+            referencia[b] = max(referencia.get(b, 0), v)
+
+    dados = []
+    for n in niches:
+        h = channel_health(conn, n, hoje=hoje, janela_decisao_dias=janela,
+                           piso_vpd=piso_vpd, referencia=referencia)
+        dados.append(h)
+        if h["veredito"] == "SEM DADOS":
+            L.append(f"  {n:<30} {'—':>6} {'—':>6} {'—':>10} {'—':>7} {'SEM DADOS':>15}")
+        else:
+            rel = f"{h['relativo']*100:.0f}%" if h["relativo"] is not None else "—"
+            L.append(f"  {n:<30} {h['n_videos']:>6} {h['idade_canal_dias']:>5}d "
+                     f"{h['dias_sem_postar']:>9}d {rel:>7} {h['veredito']:>15}")
+
+    # comparação entre canais só dentro da mesma faixa de idade
+    bandas = {}
+    for h in dados:
+        for b, v in h.get("bandas", {}).items():
+            bandas.setdefault(b, []).append((h["niche"], v))
+    comparaveis = {b: v for b, v in bandas.items() if len(v) > 1}
+    if comparaveis:
+        L += ["", "  COMPARAÇÃO POR FAIXA DE IDADE (v/dia mediano)",
+              "  views/dia decai com a idade do vídeo; só a mesma faixa é comparável"]
+        for b in sorted(comparaveis):
+            itens = sorted(comparaveis[b], key=lambda x: -x[1])
+            L.append(f"    {b:<8} " + " · ".join(f"{n}: {v:.0f}" for n, v in itens))
+    else:
+        L += ["", "  ℹ️  Nenhuma faixa de idade tem dois canais — sem comparação honesta ainda."]
+
+    L += ["", "  ℹ️  Tendência (subindo/caindo) exige snapshots ao longo do tempo:",
+          "     um retrato único não distingue queda de decaimento natural de v/dia.",
+          "     Rode `add-published` periodicamente para construir a série."]
+
+    acao = [h for h in dados if h["veredito"] in ("PARADO", "MUITO ABAIXO", "ABAIXO DO PISO")
+            and h.get("janela_vencida")]
+    if acao:
+        L += ["", "  ⚠️  DECISÃO VENCIDA (janela de avaliação já passou)"]
+        for h in acao:
+            L.append(f"    {h['niche']}: {h['veredito']} — janela venceu em {h['decidir_em']}")
+    return "\n".join(L)

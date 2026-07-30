@@ -161,6 +161,7 @@
     ],
     "nota": "Fé brasileira de interior: promessa, romaria, oração em voz alta na cozinha. Português coloquial do campo, sem gíria urbana."
   },
-  "shorts_por_semana": 3,
-  "shorts_policy": "sustentar"
+  "shorts_por_semana": 0,
+  "shorts_policy": "nenhum",
+  "janela_decisao_dias": 60
 }

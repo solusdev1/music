@@ -137,6 +137,25 @@ def cmd_learn(args, conn):
         print(f"\n🔗 VPH sincronizado: {casados} de {total} vídeo(s) casaram com faixas do catálogo")
 
 
+def cmd_health(args, conn):
+    import glob as _glob
+    import os as _os
+    niches = [_os.path.basename(f)[:-5]
+              for f in sorted(_glob.glob(_os.path.join(args.niches_dir, "*.json")))]
+    print(learn.health_report(conn, niches, janela=args.janela, piso_vpd=args.piso))
+
+
+def cmd_migrate(args, conn):
+    migradas = catalog.migrate_tracks(conn, args.origem, args.destino,
+                                      apenas_com_audio=not args.incluir_sem_audio)
+    print(f"✅ {len(migradas)} faixa(s) migrada(s) de {args.origem} → {args.destino}")
+    for t in migradas[:10]:
+        print(f"   {t}")
+    if len(migradas) > 10:
+        print(f"   … e mais {len(migradas) - 10}")
+    print("\n   As faixas chegam sem histórico de uso: o público do canal novo é outro.")
+
+
 def cmd_status(args, conn):
     print("📊 MUSIC FACTORY\n")
     for n in conn.execute("SELECT niche, COUNT(*) c FROM tracks GROUP BY niche"):
@@ -229,6 +248,18 @@ def main(argv=None):
     s.add_argument("--sync-vph", action="store_true",
                    help="copia views/dia para o catálogo (usado na abertura da playlist)")
     s.set_defaults(func=cmd_learn)
+
+    s = sub.add_parser("health", help="saúde dos canais e decisão de abandono")
+    s.add_argument("--janela", type=int, default=60,
+                   help="dias de avaliação antes de julgar um canal (padrão 60)")
+    s.add_argument("--piso", type=float, help="v/dia mínimo aceitável")
+    s.set_defaults(func=cmd_health)
+
+    s = sub.add_parser("migrate-tracks", help="leva o acervo para um canal novo")
+    s.add_argument("--origem", required=True)
+    s.add_argument("--destino", required=True)
+    s.add_argument("--incluir-sem-audio", action="store_true")
+    s.set_defaults(func=cmd_migrate)
 
     s = sub.add_parser("status", help="visão geral")
     s.set_defaults(func=cmd_status)

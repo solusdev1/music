@@ -152,6 +152,7 @@
     "alma",
     "espiritu"
   ],
-  "shorts_por_semana": 3,
-  "shorts_policy": "sustentar"
+  "shorts_por_semana": 0,
+  "shorts_policy": "nenhum",
+  "janela_decisao_dias": 60
 }

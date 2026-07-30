@@ -277,47 +277,58 @@ vídeo. É o que o `cooldown_gancho_dias` (30) impede.
 `--sync-vph` copia views/dia para o catálogo, fazendo a regra "abrir a
 playlist pela faixa de maior VPH" usar desempenho real em vez de zero.
 
-## Shorts × entrega do longo
+## Shorts — fora da operação
 
-Observação do operador: **interromper os Shorts derruba a entrega dos vídeos
-longos**, e num canal os Shorts passaram a canibalizar o longo por completo.
+**Decisão do operador: não postar mais Shorts.** `shorts_policy` está em
+`"nenhum"` nos 6 canais e a pauta diária não cobra cadência.
 
-É plausível — Shorts e long-form recrutam audiências diferentes, e o público
-condicionado a Short costuma abandonar cedo um vídeo de 1h, o que devolve
-sinal ruim de retenção. Mas isso **não é verificável com poucos vídeos**, e o
-sistema não finge que é.
+O rastreio continua no código (`cadence`, `--formato short`) porque canais
+antigos têm Shorts no histórico e eles não podem contaminar a medição dos
+longos — a colisão de gancho, por exemplo, é calculada **só entre longos**.
+
+## Abandonar canal e recomeçar
+
+Estratégia do operador: canal que não entrega é abandonado, cria-se outro.
+O sistema torna essa decisão **datada e comparável**.
 
 ```bash
-python3 cli.py add-published --niche country_blues_fe \
-    --title "..." --date 2026-07-14 --views 5000 --duration "0:45"   # vira short
-
-python3 cli.py cadence --niche country_blues_fe
+python3 cli.py health --janela 60            # todos os canais
+python3 cli.py migrate-tracks --origem estrada_da_fe --destino canal_novo
 ```
 
-O relatório organiza semana a semana os Shorts publicados contra a mediana de
-v/dia dos longos daquela semana:
-
 ```
-  semana        shorts  longos   v/dia longo (mediana)
-  2026-05-18         3       1                     300
-  ...
-  2026-06-22         0       1                      90
+  canal                          vídeos  idade  s/ postar vs melhor    veredito
+  camino_de_la_fe                     3    31d        20d      100%   EM JANELA
+  country_blues_fe                    5    15d         6d      100%   EM JANELA
+  estrada_da_fe                       5    33d        12d       47%      ABAIXO
 
-  semanas COM Short:     300 v/dia mediano (5 semanas)
-  semanas SEM Short:      90 v/dia mediano (5 semanas)
-  → diferença de +233% a favor das semanas com Short
-  ⚠️  Correlação, não causa: sazonalidade e tema também mudam entre semanas.
+  COMPARAÇÃO POR FAIXA DE IDADE (v/dia mediano)
+    8-15d    country_blues_fe: 159 · estrada_da_fe: 22
+    16-30d   camino_de_la_fe: 45 · estrada_da_fe: 21
 ```
 
-**Abaixo de 6 semanas de histórico o relatório se recusa a comparar** e diz
-apenas quantas semanas faltam. Com 2 semanas, qualquer diferença é ruído — e
-sugerir o contrário levaria a decisão errada sobre a grade inteira.
+### Duas correções metodológicas que mudam a leitura
 
-Regras de apoio:
-- Duração ≤3min classifica como `short` automaticamente (`--formato` sobrescreve)
-- Colisão de gancho é medida **só entre longos** — Shorts têm dinâmica própria
-- `shorts_por_semana` no config faz a pauta diária avisar quando a cadência vence
-- `peaceful_deep_sleep` tem `shorts_policy: "nenhum"` e não recebe esse aviso
+**1. views/dia decai com a idade do vídeo.** Views são front-loaded, então um
+vídeo de 6 dias sempre parece melhor que um de 33. Toda comparação entre
+canais é feita **dentro da mesma faixa de idade** — comparar direto inflava a
+diferença entre canais em cerca de 40%.
+
+**2. Um snapshot único não mede tendência.** A primeira versão deste relatório
+dizia "Estrada da Fé: CRESCENDO" — o oposto do observado — porque comparava
+vídeos antigos (v/dia já decaído) com recentes. Qualquer canal ativo pareceria
+crescer. O veredito agora só usa o que é apurável de um retrato: dias sem
+postar e desempenho relativo por faixa. Para tendência real é preciso série
+temporal: rode `add-published` periodicamente sobre os mesmos vídeos.
+
+### O acervo sobrevive ao canal
+
+`migrate-tracks` copia as faixas com áudio pronto para o canal novo. O canal
+antigo fica intacto para consulta, e as faixas chegam **sem histórico de uso**
+— no canal novo o público é outro, então o descanso de 21 dias não se herda e
+elas já podem entrar na primeira playlist.
+
+É o que torna a estratégia de troca barata: o canal morre, o catálogo não.
 
 ## Próximas fases
 
