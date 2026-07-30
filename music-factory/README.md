@@ -277,6 +277,48 @@ vídeo. É o que o `cooldown_gancho_dias` (30) impede.
 `--sync-vph` copia views/dia para o catálogo, fazendo a regra "abrir a
 playlist pela faixa de maior VPH" usar desempenho real em vez de zero.
 
+## Shorts × entrega do longo
+
+Observação do operador: **interromper os Shorts derruba a entrega dos vídeos
+longos**, e num canal os Shorts passaram a canibalizar o longo por completo.
+
+É plausível — Shorts e long-form recrutam audiências diferentes, e o público
+condicionado a Short costuma abandonar cedo um vídeo de 1h, o que devolve
+sinal ruim de retenção. Mas isso **não é verificável com poucos vídeos**, e o
+sistema não finge que é.
+
+```bash
+python3 cli.py add-published --niche country_blues_fe \
+    --title "..." --date 2026-07-14 --views 5000 --duration "0:45"   # vira short
+
+python3 cli.py cadence --niche country_blues_fe
+```
+
+O relatório organiza semana a semana os Shorts publicados contra a mediana de
+v/dia dos longos daquela semana:
+
+```
+  semana        shorts  longos   v/dia longo (mediana)
+  2026-05-18         3       1                     300
+  ...
+  2026-06-22         0       1                      90
+
+  semanas COM Short:     300 v/dia mediano (5 semanas)
+  semanas SEM Short:      90 v/dia mediano (5 semanas)
+  → diferença de +233% a favor das semanas com Short
+  ⚠️  Correlação, não causa: sazonalidade e tema também mudam entre semanas.
+```
+
+**Abaixo de 6 semanas de histórico o relatório se recusa a comparar** e diz
+apenas quantas semanas faltam. Com 2 semanas, qualquer diferença é ruído — e
+sugerir o contrário levaria a decisão errada sobre a grade inteira.
+
+Regras de apoio:
+- Duração ≤3min classifica como `short` automaticamente (`--formato` sobrescreve)
+- Colisão de gancho é medida **só entre longos** — Shorts têm dinâmica própria
+- `shorts_por_semana` no config faz a pauta diária avisar quando a cadência vence
+- `peaceful_deep_sleep` tem `shorts_policy: "nenhum"` e não recebe esse aviso
+
 ## Próximas fases
 
 | Fase | Entrega |

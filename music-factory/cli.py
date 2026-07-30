@@ -117,8 +117,17 @@ def cmd_set_theme_score(args, conn):
 def cmd_add_published(args, conn):
     learn.add_published(conn, args.niche, args.title, args.date, args.views,
                         comments=args.comments, duration=args.duration,
-                        video_url=args.url, hook=args.hook)
+                        video_url=args.url, hook=args.hook, formato=args.formato)
     print(f"✅ registrado: {args.title[:50]} ({args.views} views em {args.date})")
+
+
+def cmd_cadence(args, conn):
+    try:
+        cfg = brief.load_niche(args.niches_dir, args.niche)
+        spw = cfg.get("shorts_por_semana")
+    except FileNotFoundError:
+        spw = None
+    print(learn.cadence_report(conn, args.niche, shorts_por_semana=spw))
 
 
 def cmd_learn(args, conn):
@@ -207,7 +216,13 @@ def main(argv=None):
     s.add_argument("--duration", help="1:54:49")
     s.add_argument("--url")
     s.add_argument("--hook", help="sobrescreve o gancho extraído do título")
+    s.add_argument("--formato", choices=["short", "long"],
+                   help="padrão: deduzido da duração (<=3min = short)")
     s.set_defaults(func=cmd_add_published)
+
+    s = sub.add_parser("cadence", help="Shorts por semana × entrega dos longos")
+    s.add_argument("--niche", required=True)
+    s.set_defaults(func=cmd_cadence)
 
     s = sub.add_parser("learn", help="desempenho real e colisão de ganchos")
     s.add_argument("--niche", required=True)

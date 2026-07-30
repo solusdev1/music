@@ -10,7 +10,7 @@ import json
 from datetime import date
 from pathlib import Path
 
-from . import catalog, opportunity, playlist, quality
+from . import catalog, learn, opportunity, playlist, quality
 
 
 def load_niche(niches_dir, niche):
@@ -258,6 +258,21 @@ def generate(conn, cfg, out_root, *, today=None, n_songs=None, niches_dir=None):
 
     out = Path(out_root) / today / niche
     (out / "playlist").mkdir(parents=True, exist_ok=True)
+
+    spw = cfg.get("shorts_por_semana")
+    if spw:
+        gap = learn.shorts_gap(conn, niche)
+        limite = max(1, round(7 / spw))
+        if gap is None:
+            avisos.append(
+                f"política do canal é {spw} Short(s)/semana, mas nenhum Short foi "
+                "registrado ainda (use add-published --formato short)."
+            )
+        elif gap > limite:
+            avisos.append(
+                f"⏱️ último Short há {gap} dias (política: {spw}/semana). Este canal "
+                "depende de cadência de Shorts — verifique a entrega dos longos."
+            )
 
     evitar = quality.avoid_list(conn, niche, protegidas=cfg.get("palavras_protegidas", ()))
     if evitar["palavras"]:

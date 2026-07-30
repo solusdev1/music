@@ -151,5 +151,7 @@
     "cielo",
     "alma",
     "espiritu"
-  ]
+  ],
+  "shorts_por_semana": 3,
+  "shorts_policy": "sustentar"
 }
