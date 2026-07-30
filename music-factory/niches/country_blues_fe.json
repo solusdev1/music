@@ -11,10 +11,10 @@
   "duracao_media_faixa_sec": 270,
   "style_prompt": "Country blues gospel BR, slide guitar, órgão suave, barítono rouco, coral final, warm analog",
   "exclude_styles": "EDM, trap, funk, rap, pop worship brilhante, autotune pesado, metal, bateria eletrônica, voz infantil",
-  "formula_titulo": "{GANCHO} 🙏 | 1 Hora de Country Blues Gospel Para {BENEFICIO}",
+  "formula_titulo": "{GANCHO} 🙏 | {DURACAO} de Country Blues Gospel Para {BENEFICIO}",
   "formula_alt": [
     "{GANCHO} 🙏 | Playlist Country Gospel Blues Para {BENEFICIO}",
-    "{GANCHO} 🙏 | 1 Hora de Louvores Country Gospel Para {BENEFICIO}"
+    "{GANCHO} 🙏 | {DURACAO} de Louvores Country Gospel Para {BENEFICIO}"
   ],
   "ganchos": [
     "DEUS VIU SUA DOR",

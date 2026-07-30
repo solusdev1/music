@@ -60,9 +60,14 @@ def cmd_import_acervo(args, conn):
 
 def cmd_build_playlist(args, conn):
     cfg = brief.load_niche(args.niches_dir, args.niche)
+    # remontar a MESMA playlist não deve esbarrar no descanso que ela criou
+    pid = None
+    if args.save:
+        row = conn.execute("SELECT id FROM playlists WHERE slug=?", (args.save,)).fetchone()
+        pid = row["id"] if row else None
     plano = playlist.build(
         conn, args.niche, target_sec=args.target or cfg.get("target_sec", 3600),
-        cooldown_days=cfg.get("cooldown_faixa_dias", 21),
+        cooldown_days=cfg.get("cooldown_faixa_dias", 21), ignorar_playlist=pid,
     )
     print(f"🎵 {cfg['nome_exibicao']} — {len(plano['sequence'])} faixas, "
           f"{playlist._fmt_ts(plano['total_sec'])}\n")

@@ -1,0 +1,91 @@
+════════════════════════════════════════════════════════════════
+ PACOTE DA PLAYLIST — SOUTHERN GRACE ROADS — 30/07/2026
+ Tema: Psalm 23 — the Lord is my shepherd
+ 5 faixas · 25:48
+════════════════════════════════════════════════════════════════
+
+⚠️  LEIA ANTES: a playlist tem 25:48, não uma hora.
+    O canal ainda não tem acervo — são só as 5 faixas de hoje. Os títulos
+    abaixo anunciam a duração REAL. Para chegar a 1 hora faltam ~7 faixas,
+    o que dá 2 lotes a mais. Anunciar "1 Hour" com 25 minutos quebra a
+    promessa nos primeiros segundos e derruba retenção.
+
+
+──────────────── TÍTULO ────────────────
+
+RECOMENDADO:
+WHEN THE HARVEST FAILED 🙏 | 20 Minutes of Southern Country Gospel Music for Prayer and Quiet Rest
+
+ALTERNATIVOS (teste A/B):
+MAMA'S HYMN STILL SINGS 🙏 Gospel Music for Deep Rest and Healing | Christian Country Blues
+THE LORD MET ME IN THE FIELD | 20 Minutes of Christian Country Music for Faith on Hard Days
+
+  Por que assim: o radar mostrou que "southern gospel" tem só 24 mil
+  buscas/mês. "gospel music" (340 mil, concorrência 21) e "christian
+  country music" (38 mil, concorrência 17) entram cedo no título para
+  pegar a busca larga; o gancho emocional vem na frente pelo CTR.
+
+
+──────────────── DESCRIÇÃO ────────────────
+
+WHEN THE HARVEST FAILED 🙏 | 20 Minutes of Southern Country Gospel Music for Prayer and Quiet Rest
+
+Made for anyone who needs to set the weight down for a while. Inspired by Psalm 23 — the Lord is my shepherd.
+
+Press play, let your shoulders come down, and let it sit with you.
+
+⏱️ TRACKS
+0:00 — Mercy Followed Me Home
+4:48 — I Ain't Walkin It Alone
+10:00 — He Set The Table Anyway
+14:36 — I Left The Porch Light On For You
+20:18 — Lay It Down By The Door
+
+🙏 If something here found you tonight, subscribe to Southern Grace Roads, tap the bell,
+and send it to somebody walking a hard road right now.
+
+#GospelMusic #ChristianCountryMusic #SouthernGospel #CountryGospel #GospelBlues #GospelHymns #PrayerMusic #RestAndHealing #FaithMusic #SouthernGraceRoads
+
+---
+Music created with the assistance of artificial intelligence.
+
+──────────────── HASHTAGS ────────────────
+
+#GospelMusic #ChristianCountryMusic #SouthernGospel #CountryGospel #GospelBlues #GospelHymns #PrayerMusic #RestAndHealing #FaithMusic #SouthernGraceRoads
+
+
+──────────────── TAGS DO YOUTUBE ────────────────
+
+gospel music, christian country music, southern gospel, country gospel, gospel music praise and worship, southern gospel piano, gospel blues, 1 hour gospel music, gospel music for prayer, country gospel hymns, relaxing gospel music, gospel music for sleep, old country gospel, southern gospel songs, christian music for rest
+
+
+──────────────── COMENTÁRIO FIXADO ────────────────
+
+🙏 Where are you listening from tonight?
+Leave your prayer request below — we'll pray with you.
+
+
+──────────────── PROMPT DA THUMBNAIL ────────────────
+
+Lone weathered cowboy sitting on the steps of a wooden farmhouse porch at dusk, dobro guitar resting across his knees, hat tipped low, back half-turned to camera. Warm amber lantern on the rail beside him. Behind: harvest fields fading into blue Appalachian hills, a small white country church steeple far off on the horizon, first stars coming out. Dust in the light. Deep teal and amber palette, high contrast, cinematic 16:9, shallow depth of field, weathered film grain. Reverent and lonesome, not somber. No text, no logo, no readable signage.
+
+  TEXTO NA ARTE (por cima, fora do prompt de imagem):
+    linha 1, grande:  I AIN'T WALKIN' IT ALONE
+    linha 2, menor:   25 MIN · SOUTHERN COUNTRY GOSPEL
+
+  Mantenha a tipografia e a paleta dos vídeos anteriores do canal — quem
+  já é inscrito reconhece a miniatura antes de ler o título.
+
+
+──────────────── TRACKLIST / CAPÍTULOS ────────────────
+
+0:00 — Mercy Followed Me Home
+4:48 — I Ain't Walkin It Alone
+10:00 — He Set The Table Anyway
+14:36 — I Left The Porch Light On For You
+20:18 — Lay It Down By The Door
+
+  ⚠️ Tempos com durações ESTIMADAS. Depois de gerar os áudios no Suno:
+       cli.py set-audio --slug <slug> --file <arquivo> --duration <seg>
+       cli.py build-playlist --niche southern_grace_roads --save sgr-2026-07-30
+     Os capítulos se recalculam sozinhos.

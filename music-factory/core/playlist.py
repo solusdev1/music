@@ -21,7 +21,7 @@ def _fmt_ts(seconds: int) -> str:
 
 
 def build(conn, niche, *, new_track_ids=(), target_sec=3600, cooldown_days=21,
-          tolerance_sec=180, n_closers=2):
+          tolerance_sec=180, n_closers=2, ignorar_playlist=None):
     """Monta a sequência da playlist. NÃO grava — devolve o plano para inspeção.
 
     Retorna dict com: sequence (faixas + position/start_sec), total_sec,
@@ -39,7 +39,8 @@ def build(conn, niche, *, new_track_ids=(), target_sec=3600, cooldown_days=21,
         novas.append(row)
 
     acervo = catalog.eligible_tracks(
-        conn, niche, cooldown_days=cooldown_days, exclude_ids=set(new_ids)
+        conn, niche, cooldown_days=cooldown_days, exclude_ids=set(new_ids),
+        ignorar_playlist=ignorar_playlist,
     )
 
     if not acervo and not novas:

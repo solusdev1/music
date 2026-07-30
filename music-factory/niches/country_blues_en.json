@@ -59,7 +59,7 @@
   "exclude_styles": "EDM, trap, rap, bright pop worship, heavy autotune, metal, electronic drums, children voices",
   "formula_titulo": "{GANCHO} 🙏 Gospel Blues | {BENEFICIO}",
   "formula_alt": [
-    "{GANCHO} 🙏 | 1 Hour of Gospel Blues for {BENEFICIO}",
+    "{GANCHO} 🙏 | {DURACAO} of Gospel Blues for {BENEFICIO}",
     "{GANCHO} | Soulful Gospel Blues Worship for {BENEFICIO}"
   ],
   "ganchos": [

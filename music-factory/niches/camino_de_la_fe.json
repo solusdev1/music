@@ -57,7 +57,7 @@
   "pais": "MX",
   "style_prompt": "Blues gospel campirano, guitarra slide, órgano cálido, barítono rasgado, coro final, analógico cálido",
   "exclude_styles": "EDM, trap, reggaetón, rap, pop worship brillante, autotune pesado, metal, batería electrónica, voces infantiles",
-  "formula_titulo": "{GANCHO} 🙏 | 1 Hora de Blues Gospel Para {BENEFICIO}",
+  "formula_titulo": "{GANCHO} 🙏 | {DURACAO} de Blues Gospel Para {BENEFICIO}",
   "formula_alt": [
     "{GANCHO} 🙏 | Alabanzas de Blues Gospel Para {BENEFICIO}",
     "{GANCHO} 🙏 | Música Cristiana Para {BENEFICIO}"

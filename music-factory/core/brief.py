@@ -38,7 +38,25 @@ def load_group(niches_dir, cfg):
     return irmaos or [cfg["niche"]], nomes
 
 
-def make_titles(conn, cfg, n=3):
+def _rotulo_duracao(total_sec, idioma="pt"):
+    """Rótulo honesto de duração para o título.
+
+    Anunciar '1 Hour' numa playlist de 26 minutos quebra a promessa logo
+    nos primeiros segundos — e é o tipo de coisa que derruba retenção e
+    rende comentário ruim. O rótulo sai do total real.
+    """
+    if not total_sec:
+        return ""
+    m = total_sec // 60
+    en = str(idioma)[:2].lower() == "en"
+    if m >= 55:
+        h = round(total_sec / 3600)
+        return f"{h} Hour{'s' if h > 1 else ''}" if en else f"{h} Hora{'s' if h > 1 else ''}"
+    dez = max(10, (m // 10) * 10)
+    return f"{dez} Minutes" if en else f"{dez} Minutos"
+
+
+def make_titles(conn, cfg, n=3, *, total_sec=None):
     """Gera títulos evitando ganchos usados recentemente."""
     ganchos = catalog.pick_hook(
         conn, cfg["niche"], cfg["ganchos"], cooldown_days=cfg.get("cooldown_gancho_dias", 30)
@@ -50,8 +68,10 @@ def make_titles(conn, cfg, n=3):
         formula = formulas[i % len(formulas)]
         titulos.append({
             "gancho": ganchos[i],
-            "titulo": formula.replace("{GANCHO}", ganchos[i])
-                             .replace("{BENEFICIO}", beneficios[i % len(beneficios)]),
+            "titulo": (formula.replace("{GANCHO}", ganchos[i])
+                              .replace("{BENEFICIO}", beneficios[i % len(beneficios)])
+                              .replace("{DURACAO}", _rotulo_duracao(
+                                  total_sec, cfg.get("idioma", "pt")))),
         })
     return titulos
 
@@ -176,28 +196,73 @@ Depois de gerar, registre cada faixa:
 """
 
 
-def descricao(cfg, tema, chapters, titulo):
-    return f"""{titulo}
+DESCRICAO_PADRAO = {
+    "pt": """{titulo}
 
-Se o seu coração está cansado, esta playlist foi preparada para te ajudar a
-descansar em Deus e renovar suas forças. Inspirada em {tema}.
+Esta playlist foi preparada para acompanhar quem precisa descansar e renovar
+as forças. Inspirada em {tema}.
 
-Nesta coletânea de Country Blues Gospel em português reunimos músicas novas
-do canal {cfg['canal']} com louvores que já fazem parte da nossa caminhada.
+Dê play, respire fundo e deixe a música falar com você.
 
-Dê play, respire fundo e deixe Deus falar ao seu coração.
-
-⏱️ TRACKLIST
+⏱️ FAIXAS
 {chapters}
 
-🙏 Se essa playlist falou com você, inscreva-se no canal {cfg['canal']},
-ative o sininho e compartilhe com alguém que precisa de esperança hoje.
+🙏 Se algo aqui falou com você, inscreva-se no canal {canal}, ative o sininho
+e compartilhe com alguém que precisa ouvir isso hoje.
 
-{' '.join(cfg['hashtags'])}
+{hashtags}
 
 ---
-Música gerada com auxílio de inteligência artificial.
-"""
+Música criada com auxílio de inteligência artificial.""",
+
+    "en": """{titulo}
+
+Made for anyone who needs to set the weight down for a while. Inspired by {tema}.
+
+Press play, let your shoulders come down, and let it sit with you.
+
+⏱️ TRACKS
+{chapters}
+
+🙏 If something here found you tonight, subscribe to {canal}, tap the bell,
+and send it to somebody walking a hard road right now.
+
+{hashtags}
+
+---
+Music created with the assistance of artificial intelligence.""",
+
+    "es": """{titulo}
+
+Preparada para acompañar a quien necesita descansar y renovar las fuerzas.
+Inspirada en {tema}.
+
+Dale play, respira hondo y deja que la música te hable.
+
+⏱️ CANCIONES
+{chapters}
+
+🙏 Si algo aquí habló contigo, suscríbete al canal {canal}, activa la
+campanita y compártelo con alguien que lo necesite hoy.
+
+{hashtags}
+
+---
+Música creada con ayuda de inteligencia artificial.""",
+}
+
+
+def descricao(cfg, tema, chapters, titulo):
+    """Descrição no idioma do canal.
+
+    O template vem do config quando existe; senão usa o padrão do idioma.
+    Antes isto era português fixo, o que gerava descrição em PT num canal
+    em inglês.
+    """
+    tpl = cfg.get("descricao_template") or DESCRICAO_PADRAO.get(
+        str(cfg.get("idioma", "pt"))[:2].lower(), DESCRICAO_PADRAO["pt"])
+    return tpl.format(titulo=titulo, tema=tema, chapters=chapters,
+                      canal=cfg["canal"], hashtags=" ".join(cfg["hashtags"]))
 
 
 def generate(conn, cfg, out_root, *, today=None, n_songs=None, niches_dir=None,

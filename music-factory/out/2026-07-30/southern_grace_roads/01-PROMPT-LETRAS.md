@@ -23,6 +23,10 @@ Escreva nativo deste país, não traduzido.
 **Nunca transponha:** sertão, viola caipira, rancho mexicano, big city church, cathedral, gospel choir robes, revival tent, church pew, choir loft, river baptism, street corner preacher
 Deep South / Appalachia rural: trabalho braçal, família, hino herdado da avó. Fé prática e sem ornamento — nada de linguagem de culto urbano.
 
+### Já gasto no acervo (5 letras analisadas)
+**Não use estas imagens:** room, youre, thats, somethin, hands
+**Não feche verso com:** -day, -you, -own, -ome, -one
+Se a emoção pedir uma delas, mostre o gesto de alguém diante da cena, ou o detalhe que ninguém repara.
 
 ---
 
@@ -30,27 +34,27 @@ Deep South / Appalachia rural: trabalho braçal, família, hino herdado da avó.
 
 
 ### FAIXA 1 — papel: retenção (andamento médio, refrão cantável em coro)
-**Ângulo narrativo (obrigatório, não repita o das outras):** someone still in the middle of it, no answer yet
+**Ângulo narrativo (obrigatório, não repita o das outras):** someone who failed, felt shame, and was taken back
 **Cor sonora desta faixa:** weathered low vocal, dobro leading, upright bass, brushed snare
 **Mood:** retain
 
 ### FAIXA 2 — papel: narrativa (testemunho de vida dura, puxa comentário)
-**Ângulo narrativo (obrigatório, não repita o das outras):** someone looking back years later, grateful
+**Ângulo narrativo (obrigatório, não repita o das outras):** the person praying at 3am because sleep won't come
 **Cor sonora desta faixa:** fiddle carrying the melody, upright bass walking, mid tempo
 **Mood:** retain
 
 ### FAIXA 3 — papel: hino antigo (lento, quase a capela)
-**Ângulo narrativo (obrigatório, não repita o das outras):** a parent praying for a child who left home
+**Ângulo narrativo (obrigatório, não repita o das outras):** someone caring for the sick while holding their own faith together
 **Cor sonora desta faixa:** voice and guitar almost alone, pedal steel entering late, no drums
 **Mood:** retain
 
 ### FAIXA 4 — papel: renovação (colheita, virada, estrada)
-**Ângulo narrativo (obrigatório, não repita o das outras):** someone learning to live with an empty chair
+**Ângulo narrativo (obrigatório, não repita o das outras):** the young one who almost quit and stayed one more day
 **Cor sonora desta faixa:** family harmony on the chorus, hand claps, full band
 **Mood:** retain
 
 ### FAIXA 5 — papel: descanso (fecho calmo, quase ambiente) → mood **calm**
-**Ângulo narrativo (obrigatório, não repita o das outras):** the worker coming home spent, finding strength for tomorrow
+**Ângulo narrativo (obrigatório, não repita o das outras):** someone starting over with nothing left
 **Cor sonora desta faixa:** very slow hymn feel, close harmony, almost a cappella opening
 **Mood:** calm
 

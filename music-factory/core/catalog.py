@@ -62,18 +62,27 @@ def set_audio(conn, slug, audio_path, duration_sec):
         raise LookupError(f"faixa não encontrada: {slug!r}")
 
 
-def eligible_tracks(conn, niche, *, cooldown_days=21, exclude_ids=()):
+def eligible_tracks(conn, niche, *, cooldown_days=21, exclude_ids=(),
+                    ignorar_playlist=None):
     """Faixas do acervo liberadas para playlist (fora do período de descanso).
 
     Só entram faixas com áudio pronto ou já publicadas — draft não tem som.
+
+    `ignorar_playlist` desconsidera o uso registrado por UMA playlist. É o
+    que permite remontar a mesma playlist depois de corrigir durações: sem
+    isso, montar a playlist colocava suas próprias faixas em descanso e a
+    remontagem — que o fluxo manda fazer — falhava por falta de faixa.
     """
     cutoff = (datetime.now(timezone.utc) - timedelta(days=cooldown_days)).isoformat()
     rows = conn.execute(
-        """SELECT t.*, (SELECT MAX(used_at) FROM usage u WHERE u.track_id=t.id) AS last_used
+        """SELECT t.*, (SELECT MAX(used_at) FROM usage u
+                        WHERE u.track_id=t.id
+                          AND (? IS NULL OR u.playlist_id IS NULL OR u.playlist_id != ?)
+           ) AS last_used
            FROM tracks t
            WHERE t.niche=? AND t.status IN ('audio_ok','published')
            ORDER BY t.vph DESC, t.created_at ASC""",
-        (niche,),
+        (ignorar_playlist, ignorar_playlist, niche),
     ).fetchall()
     out = []
     for r in rows:

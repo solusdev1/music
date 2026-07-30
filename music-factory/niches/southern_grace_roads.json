@@ -50,10 +50,10 @@
   "style_prompt": "Southern country gospel blues, dobro and pedal steel, fiddle, upright bass, weathered male voice, back-porch harmony, dry vintage recording",
   "exclude_styles": "Hammond organ church gospel, EDM, trap, rap, bright pop worship, heavy autotune, metal, electronic drums, orchestral strings",
   "estrutura": "[Intro] [Verse 1] [Chorus] [Verse 2] [Chorus] [Bridge] [Final Chorus] [Outro]",
-  "formula_titulo": "{GANCHO} 🙏 Southern Gospel | {BENEFICIO}",
+  "formula_titulo": "{GANCHO} 🙏 | {DURACAO} of Southern Country Gospel Music for {BENEFICIO}",
   "formula_alt": [
-    "{GANCHO} | 1 Hour of Southern Country Gospel for {BENEFICIO}",
-    "{GANCHO} 🙏 Old Country Gospel Hymns for {BENEFICIO}"
+    "{GANCHO} 🙏 Gospel Music for {BENEFICIO} | Christian Country Blues",
+    "{GANCHO} | {DURACAO} of Christian Country Music for {BENEFICIO}"
   ],
   "ganchos": [
     "THE OLD ROAD BACK HOME",
@@ -147,7 +147,7 @@
     "christian music for rest"
   ],
   "comentario_fixado": "🙏 Where are you listening from tonight?\nLeave your prayer request below — we'll pray with you.",
-  "prompt_thumbnail": "Weathered wooden porch of an Appalachian farmhouse at dusk, old hymnbook open on a rocking chair, dobro leaning against the rail, mist over harvest fields, distant hills, warm amber light, no people, cinematic 16:9, high contrast, no text, no logo.",
+  "prompt_thumbnail": "Lone weathered cowboy sitting on the steps of a wooden farmhouse porch at dusk, dobro guitar resting across his knees, hat tipped low, back half-turned to camera. Warm amber lantern on the rail beside him. Behind: harvest fields fading into blue Appalachian hills, a small white country church steeple far off on the horizon, first stars coming out. Dust in the light. Deep teal and amber palette, high contrast, cinematic 16:9, shallow depth of field, weathered film grain. Reverent and lonesome, not somber. No text, no logo, no readable signage.",
   "palavras_protegidas": [
     "god",
     "jesus",

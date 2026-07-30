@@ -13,7 +13,7 @@
   "exclude_styles": "country, sertanejo, viola caipira, slide guitar rural, EDM, trap, funk, rap, pop worship brilhante, autotune pesado, metal, bateria eletrônica",
   "formula_titulo": "{GANCHO} 🙏 | {BENEFICIO}",
   "formula_alt": [
-    "{GANCHO} 🙏 | 1 Hora de Gospel Blues Para {BENEFICIO}",
+    "{GANCHO} 🙏 | {DURACAO} de Gospel Blues Para {BENEFICIO}",
     "{GANCHO} 🙏 | Louvores de Gospel Blues Para {BENEFICIO}"
   ],
   "ganchos": [

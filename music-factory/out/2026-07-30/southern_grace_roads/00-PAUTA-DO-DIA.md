@@ -7,11 +7,11 @@ _Critério: rodízio — não usado nos últimos 60 dias._
 ## As 5 faixas
 | # | papel | ângulo | cor sonora |
 |---|-------|--------|------------|
-| 1 | retenção (andamento médio, | someone still in the middle of it, no answer | weathered low vocal, dobro leading, upri |
-| 2 | narrativa (testemunho de v | someone looking back years later, grateful | fiddle carrying the melody, upright bass |
-| 3 | hino antigo (lento, quase  | a parent praying for a child who left home | voice and guitar almost alone, pedal ste |
-| 4 | renovação (colheita, virad | someone learning to live with an empty chair | family harmony on the chorus, hand claps |
-| 5 | descanso (fecho calmo, qua | the worker coming home spent, finding streng | very slow hymn feel, close harmony, almo |
+| 1 | retenção (andamento médio, | someone who failed, felt shame, and was take | weathered low vocal, dobro leading, upri |
+| 2 | narrativa (testemunho de v | the person praying at 3am because sleep won' | fiddle carrying the melody, upright bass |
+| 3 | hino antigo (lento, quase  | someone caring for the sick while holding th | voice and guitar almost alone, pedal ste |
+| 4 | renovação (colheita, virad | the young one who almost quit and stayed one | family harmony on the chorus, hand claps |
+| 5 | descanso (fecho calmo, qua | someone starting over with nothing left | very slow hymn feel, close harmony, almo |
 
 ## O que fazer
 1. Cole `01-PROMPT-LETRAS.md` no Claude → recebe as 5 letras
@@ -21,3 +21,7 @@ _Critério: rodízio — não usado nos últimos 60 dias._
 ## Avisos
 - ⚠️ cooldown de tema compartilhado com 4 canal(is) irmão(s): El Camino de la Fé, Blues & Praises, Country Blues e Fé, Estrada da Fé
 - ⚠️ tema por rodízio simples (sem dado de oportunidade: nenhuma coleta de oportunidade registrada)
+- ⚠️ apenas 1 faixa(s) 'calm' disponível(is) para o fecho (ideal: 2). Marque faixas com mood='calm'.
+- ⚠️ acervo insuficiente: faltam 13:42 para o alvo de 1:05:00 (~4 faixa(s)). A playlist sai mais curta.
+- ⚠️ 5 de 10 faixas com duração ESTIMADA. Os timestamps só ficam corretos após 'set-audio' com a duração real.
+- ⚠️ 5 imagem(ns) saturada(s) no acervo (room, youre, thats, somethin, hands…) — a pauta já manda evitar.
