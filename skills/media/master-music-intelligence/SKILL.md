@@ -1,7 +1,7 @@
 ---
 name: master-music-intelligence
 description: "Consolidated music intelligence skill: trend analysis (8 genres), conflict resolution (Radar vs Claude), production pipeline, channel analytics, and persistent memory with auto-versioning."
-version: 1.0.0
+version: 1.1.0
 author: Claude Code Agent
 license: MIT
 platforms: [linux, macos, windows]
@@ -12,7 +12,7 @@ metadata:
     integration: consolidated
 ---
 
-# Master Music Intelligence Skill (v1.0)
+# Master Music Intelligence Skill (v1.1)
 
 **Status**: PRODUCTION READY  
 **Auto-updates**: YES (version increments on each use)  
@@ -30,6 +30,7 @@ Consolidated integration of YouTube music production, channel analysis, trend in
 - ✅ **Claude Trend Intelligence** (8 emerging genres, saturation analysis)
 - ✅ **Conflict Resolution** (Radar vs Claude weighted scoring)
 - ✅ **Persistent Memory** (SQLite database + auto-versioning)
+- ✅ **Seed Alimentado** (radar histórico Country Blues e Fé + pacotes Suno 2026-07-30)
 
 ---
 
@@ -39,14 +40,14 @@ Consolidated integration of YouTube music production, channel analysis, trend in
 # 1. Initialize database
 python hermes_master_music_intelligence.py --init
 
-# 2. Load trend data
+# 2. Load trend data bundled in this repo
 python hermes_master_music_intelligence.py --add-trends-claude
 
-# 3. Load channel data
+# 3. Load Hermes/YouTube radar snapshots copied from the previous repo
 python hermes_master_music_intelligence.py --add-channels-hermes
 
-# 4. Generate recommendations
-python hermes_master_music_intelligence.py --report
+# 4. Load default recommendations and generate report
+python hermes_master_music_intelligence.py --add-recommendations --report
 
 # 5. Get production guides
 python hermes_master_music_intelligence.py --guide phonk
@@ -98,6 +99,33 @@ SQLite database with auto-versioning (1.0.0 → 1.0.1 → 1.1.0)
 - **COMPARATIVO_E_CONSOLIDACAO.md** - Comparison & consolidation strategy
 - **ANALISE_ABRANGENTE_ESTILOS_MUSICAIS.md** - Detailed genre analysis
 - **SUMARIO_EXECUTIVO.md** - Executive summary
+- **data/music_intelligence_seed.json** - Seed export with 14 trend records, 90 radar records, and recommendations
+- **data/music_intelligence_seed.db** - SQLite seed generated from the same data
+- **references/youtube_radar_agent/** - Full migrated radar agent, reports, CSV/JSONL snapshots, scripts, configs, and Suno packages
+
+---
+
+## Migrated Data Feed (2026-07-30)
+
+This repository is now fed with the previously generated Hermes radar assets:
+
+- Radar reports from 2026-07-17, 2026-07-22, and 2026-07-30
+- Raw YouTube JSONL snapshots and ranked CSV files
+- Country Blues e Fé input URL configuration
+- Five-song PT-BR Country Blues Gospel Suno package
+- Production idea reports and YouTube metadata packages
+
+Use the bundled seed without touching the user's live memory:
+
+```bash
+python hermes_master_music_intelligence.py \
+  --db-path data/music_intelligence_seed.db \
+  --add-trends-claude \
+  --add-channels-hermes \
+  --add-recommendations \
+  --report \
+  --export data/music_intelligence_seed.json
+```
 
 ---
 

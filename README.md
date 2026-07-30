@@ -13,6 +13,7 @@ A production-ready skill that combines music production expertise with comprehen
 ✅ Production Pipeline      - Complete Suno + YouTube metadata packages
 ✅ Daily Analytics          - Track views, engagement, patterns, benchmarks
 ✅ Persistent Memory        - SQLite database with auto-versioning
+✅ Fed with Hermes Assets   - Country Blues e Fé radar history + Suno packages
 ✅ Continuous Learning      - Improves recommendations on each use
 ```
 
@@ -22,9 +23,10 @@ A production-ready skill that combines music production expertise with comprehen
 # Initialize
 python skills/media/master-music-intelligence/hermes_master_music_intelligence.py --init
 
-# Load data
+# Load data bundled in the repository
 python skills/media/master-music-intelligence/hermes_master_music_intelligence.py --add-trends-claude
 python skills/media/master-music-intelligence/hermes_master_music_intelligence.py --add-channels-hermes
+python skills/media/master-music-intelligence/hermes_master_music_intelligence.py --add-recommendations
 
 # Get recommendations
 python skills/media/master-music-intelligence/hermes_master_music_intelligence.py --report
@@ -57,6 +59,8 @@ skills/media/master-music-intelligence/
 ├── COMPARATIVO_E_CONSOLIDACAO.md          # Comparison & consolidation
 ├── ANALISE_ABRANGENTE_ESTILOS_MUSICAIS.md # 8 genres analysis
 ├── SUMARIO_EXECUTIVO.md                   # Executive summary
+├── data/                                  # Seed SQLite + JSON export
+├── references/youtube_radar_agent/         # Migrated radar agent and outputs
 ├── config/                                 # Configuration files
 ├── scripts/                                # Automation scripts
 ├── templates/                              # Production templates
@@ -79,6 +83,22 @@ Daily tracking of views, engagement rates, subscriber growth, posting frequency,
 
 ### Persistent Memory
 SQLite database stores all trends, channels, recommendations, decisions, and conflicts. Auto-versioning system tracks improvements over time (1.0.0 → 1.0.1 → 1.1.0...).
+
+## Migrated Hermes Feed
+
+This repo was populated with the assets previously generated under the Hermes YouTube radar agent:
+
+- 14 seeded trend records combining Claude/global intelligence and Gospel BR niches
+- 90 radar channel/video records from ranked CSV snapshots
+- 2026-07-17, 2026-07-22, and 2026-07-30 reports and JSONL raw data
+- Country Blues e Fé input configuration
+- Complete 5-song PT-BR Country Blues Gospel Suno package for 2026-07-30
+
+Seed files now included:
+
+- `skills/media/master-music-intelligence/data/music_intelligence_seed.db`
+- `skills/media/master-music-intelligence/data/music_intelligence_seed.json`
+- `skills/media/master-music-intelligence/references/youtube_radar_agent/`
 
 ## Workflow
 
@@ -104,7 +124,7 @@ SQLite database stores all trends, channels, recommendations, decisions, and con
 
 ## Version
 
-**Current**: 1.0.0 (2024-07-30)  
+**Current**: 1.1.0 (2026-07-30)  
 **Auto-increments**: 1.0.0 → 1.0.1 → 1.0.2 → 1.1.0  
 **Status**: Ready for production use
 

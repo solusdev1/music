@@ -12,6 +12,14 @@ Resumo visual e consolidado com:
 - Recomendações finais de ação
 - **Conclusão**: SERTANEJO TRAP GOSPEL é o maior potencial
 
+### Dados migrados do Hermes Radar
+
+Este diretório agora também contém:
+
+- `data/music_intelligence_seed.db` — banco SQLite alimentado com 14 tendências, 90 registros de radar e recomendações.
+- `data/music_intelligence_seed.json` — export JSON do mesmo seed.
+- `references/youtube_radar_agent/` — agente Radar Gospel Blues Viral completo, com scripts, configs, CSVs, JSONLs, relatórios e pacotes Suno já gerados.
+
 ## 🎵 Nichos Analisados
 
 ### Emergentes (Alta Oportunidade)
@@ -39,6 +47,20 @@ Resumo visual e consolidado com:
 - **Público bem definido** (25-40 anos, interior/zona rural)
 - **Monetização diversificada** (AdSense, shows, streamings, parcerias)
 - **Window aberta**: 12-18 meses antes de saturação completa
+
+## 🚀 Rodar com o seed atual
+
+```bash
+python hermes_master_music_intelligence.py \
+  --db-path data/music_intelligence_seed.db \
+  --add-trends-claude \
+  --add-channels-hermes \
+  --add-recommendations \
+  --report \
+  --export data/music_intelligence_seed.json
+```
+
+O seed inclui o histórico Country Blues e Fé, relatórios de 2026-07-17/22/30 e o pacote de 5 músicas Country Blues Gospel em PT-BR de 2026-07-30.
 
 ## ⏰ Urgência
 

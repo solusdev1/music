@@ -17,10 +17,12 @@ Last Updated: 2024-07-30
 Memory: SQLite + JSON Backup
 """
 
+import argparse
+import csv
 import json
 import sqlite3
 import os
-from datetime import datetime
+from datetime import datetime, UTC
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 
@@ -33,7 +35,7 @@ class HermesmasterMusicIntelligence:
         self.db_path = Path(db_path).expanduser()
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self.version = "1.0.0"
-        self.last_updated = datetime.utcnow().isoformat()
+        self.last_updated = datetime.now(UTC).isoformat()
         self._init_db()
         self._load_all_data()
 
@@ -189,7 +191,7 @@ class HermesmasterMusicIntelligence:
             data.get('total_views'),
             data.get('avg_engagement'),
             data.get('saturation_level'),
-            datetime.utcnow().isoformat(),
+            datetime.now(UTC).isoformat(),
             source
         ))
 
@@ -225,7 +227,7 @@ class HermesmasterMusicIntelligence:
             channel_data.get('posting_frequency'),
             channel_data.get('quality_score'),
             source,
-            datetime.utcnow().isoformat()
+            datetime.now(UTC).isoformat()
         ))
 
         conn.commit()
@@ -327,7 +329,7 @@ class HermesmasterMusicIntelligence:
         cursor.execute("""
             INSERT INTO conflicts (style, radar_opinion, claude_opinion, divergence_level, resolution, timestamp)
             VALUES (?, ?, ?, ?, ?, ?)
-        """, (style, radar_opinion, claude_opinion, divergence, resolution, datetime.utcnow().isoformat()))
+        """, (style, radar_opinion, claude_opinion, divergence, resolution, datetime.now(UTC).isoformat()))
 
         conn.commit()
         conn.close()
@@ -345,7 +347,7 @@ class HermesmasterMusicIntelligence:
         cursor.execute("""
             INSERT OR REPLACE INTO recommendations (style, rank, score, reasoning, confidence_level, timestamp)
             VALUES (?, ?, ?, ?, ?, ?)
-        """, (style, rank, score, reasoning, confidence, datetime.utcnow().isoformat()))
+        """, (style, rank, score, reasoning, confidence, datetime.now(UTC).isoformat()))
 
         conn.commit()
         conn.close()
@@ -454,7 +456,7 @@ class HermesmasterMusicIntelligence:
         data = {
             'version': self.version,
             'last_updated': self.last_updated,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(UTC).isoformat(),
             'trends': self.trends,
             'channels': self.channels,
             'recommendations': self.recommendations,
@@ -532,7 +534,7 @@ class HermesmasterMusicIntelligence:
         else:
             self.version = f"{parts[0]}.{parts[1]}.{patch}"
 
-        self.last_updated = datetime.utcnow().isoformat()
+        self.last_updated = datetime.now(UTC).isoformat()
 
         # Atualizar metadata
         conn = sqlite3.connect(self.db_path)
@@ -543,6 +545,145 @@ class HermesmasterMusicIntelligence:
         cursor.execute("INSERT INTO skill_metadata VALUES (?, ?)", ('last_updated', self.last_updated))
         conn.commit()
         conn.close()
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CLI + SEEDS DO REPOSITÓRIO
+# ═══════════════════════════════════════════════════════════════════════════════
+
+SKILL_DIR = Path(__file__).resolve().parent
+RADAR_REFERENCE_DIR = SKILL_DIR / "references" / "youtube_radar_agent"
+
+
+CLAUDE_TRENDS = {
+    "Phonk": {"growth_percentage": 234, "new_channels": 88, "total_views": 4281000, "avg_engagement": 4.69, "saturation_level": "Very Low"},
+    "Hyperpop": {"growth_percentage": 245, "new_channels": 74, "total_views": 3920000, "avg_engagement": 4.42, "saturation_level": "Very Low"},
+    "Indie Bedroom Pop": {"growth_percentage": 167, "new_channels": 156, "total_views": 3580000, "avg_engagement": 4.31, "saturation_level": "Low"},
+    "Reggaeton Trap": {"growth_percentage": 198, "new_channels": 63, "total_views": 4410000, "avg_engagement": 5.11, "saturation_level": "Low"},
+    "Emo Rap": {"growth_percentage": 176, "new_channels": 69, "total_views": 3370000, "avg_engagement": 4.08, "saturation_level": "Low"},
+    "Amapiano": {"growth_percentage": 212, "new_channels": 58, "total_views": 4010000, "avg_engagement": 4.22, "saturation_level": "Emerging"},
+    "Hyperpunk": {"growth_percentage": 223, "new_channels": 47, "total_views": 2860000, "avg_engagement": 3.92, "saturation_level": "Low"},
+    "Synthwave": {"growth_percentage": 189, "new_channels": 51, "total_views": 3190000, "avg_engagement": 3.87, "saturation_level": "Low"},
+    "Trap Gospel": {"growth_percentage": 180, "new_channels": 44, "total_views": 3250000, "avg_engagement": 4.26, "saturation_level": "Emerging"},
+    "Sertanejo Trap Gospel": {"growth_percentage": 162, "new_channels": 52, "total_views": 2810000, "avg_engagement": 4.10, "saturation_level": "Emerging"},
+    "Funk Gospel": {"growth_percentage": 145, "new_channels": 39, "total_views": 2600000, "avg_engagement": 4.15, "saturation_level": "Growing"},
+    "Afrobeat Gospel": {"growth_percentage": 138, "new_channels": 34, "total_views": 2100000, "avg_engagement": 3.98, "saturation_level": "Emerging"},
+    "Pagode Gospel": {"growth_percentage": 72, "new_channels": 18, "total_views": 1960000, "avg_engagement": 3.20, "saturation_level": "Medium-High"},
+    "Country Blues Gospel": {"growth_percentage": 45, "new_channels": 12, "total_views": 3177000, "avg_engagement": 2.92, "saturation_level": "High"},
+}
+
+
+def _infer_style(row: Dict[str, str]) -> str:
+    text = " ".join([row.get("query", ""), row.get("title", ""), row.get("detected_themes", "")]).lower()
+    if "sertanejo" in text and "trap" in text:
+        return "Sertanejo Trap Gospel"
+    if "sertanejo" in text:
+        return "Sertanejo Gospel"
+    if "country" in text or "blues" in text or "outlaw" in text:
+        return "Country Blues Gospel"
+    if "funk" in text:
+        return "Funk Gospel"
+    if "afrobeat" in text:
+        return "Afrobeat Gospel"
+    if "trap" in text:
+        return "Trap Gospel"
+    return "Gospel Music"
+
+
+def add_claude_trends(hermes: HermesmasterMusicIntelligence) -> None:
+    for style, data in CLAUDE_TRENDS.items():
+        hermes.add_trend_analysis(style, data, source="claude+repo-seed")
+
+
+def add_radar_channels(hermes: HermesmasterMusicIntelligence, radar_dir: Path = RADAR_REFERENCE_DIR) -> int:
+    processed_dir = radar_dir / "data_processed"
+    csv_files = sorted(processed_dir.glob("videos_ranked_*.csv"))
+    conn = sqlite3.connect(hermes.db_path)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM channel_analysis WHERE data_source = ?", ("youtube-radar-agent",))
+    conn.commit()
+    conn.close()
+    added = 0
+    seen = set()
+    for csv_file in csv_files:
+        with csv_file.open(newline="", encoding="utf-8") as handle:
+            for row in csv.DictReader(handle):
+                key = (row.get("url"), csv_file.name)
+                if not row.get("title") or key in seen:
+                    continue
+                seen.add(key)
+                views = int(float(row.get("view_count") or 0))
+                likes_per_1000 = float(row.get("likes_per_1000") or 0)
+                comments_per_1000 = float(row.get("comments_per_1000") or 0)
+                quality = float(row.get("viral_score") or 0)
+                hermes.add_channel({
+                    "name": row.get("channel") or "Unknown channel",
+                    "style": _infer_style(row),
+                    "views": views,
+                    "subscribers": 0,
+                    "engagement_rate": likes_per_1000 + comments_per_1000,
+                    "posting_frequency": f"snapshot:{csv_file.stem}",
+                    "quality_score": quality,
+                }, source="youtube-radar-agent")
+                added += 1
+    return added
+
+
+def add_default_recommendations(hermes: HermesmasterMusicIntelligence) -> None:
+    recommendations = [
+        ("Sertanejo Trap Gospel", 1, 452, "Maior janela estratégica gospel BR: 52 novos canais e público rural/interior claro", "HIGH"),
+        ("Trap Gospel", 2, 445, "Crescimento forte e engajamento alto com baixa saturação relativa", "HIGH"),
+        ("Phonk", 3, 440, "Score global alto para beats dark, shorts e colaborações com rappers", "HIGH"),
+        ("Country Blues Gospel", 4, 365, "Nicho já concorrido, mas útil para playlists longas e promessas emocionais em PT-BR", "MEDIUM"),
+    ]
+    conn = sqlite3.connect(hermes.db_path)
+    cursor = conn.cursor()
+    cursor.executemany("DELETE FROM recommendations WHERE style = ?", [(rec[0],) for rec in recommendations])
+    conn.commit()
+    conn.close()
+    for style, rank, score, reasoning, confidence in recommendations:
+        hermes.add_recommendation(style, rank, score, reasoning, confidence)
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Hermes Master Music Intelligence")
+    parser.add_argument("--db-path", default="~/.hermes/music_intelligence.db", help="SQLite database path")
+    parser.add_argument("--init", action="store_true", help="Initialize the SQLite database")
+    parser.add_argument("--add-trends-claude", action="store_true", help="Seed Claude/global + gospel trend analysis")
+    parser.add_argument("--add-channels-hermes", action="store_true", help="Seed channel/video snapshots from references/youtube_radar_agent")
+    parser.add_argument("--add-recommendations", action="store_true", help="Seed default recommendations")
+    parser.add_argument("--report", action="store_true", help="Print the current intelligence report")
+    parser.add_argument("--guide", help="Print a creation guide for a style, e.g. 'Phonk'")
+    parser.add_argument("--export", help="Export the current database to a JSON file")
+    parser.add_argument("--demo", action="store_true", help="Run the original demo")
+    return parser
+
+
+def main(argv: Optional[List[str]] = None) -> None:
+    args = build_parser().parse_args(argv)
+    if args.demo:
+        demo()
+        return
+
+    hermes = HermesmasterMusicIntelligence(db_path=args.db_path)
+    if args.init:
+        print(f"Initialized database: {hermes.db_path}")
+    if args.add_trends_claude:
+        add_claude_trends(hermes)
+        print(f"Seeded {len(CLAUDE_TRENDS)} trend records")
+    if args.add_channels_hermes:
+        added = add_radar_channels(hermes)
+        print(f"Seeded {added} radar channel/video records")
+    if args.add_recommendations:
+        add_default_recommendations(hermes)
+        print("Seeded default recommendations")
+    if args.guide:
+        print(json.dumps(hermes.get_creation_guide(args.guide), indent=2, ensure_ascii=False))
+    if args.export:
+        filepath = hermes.export_to_json(args.export)
+        print(f"Exported data to: {filepath}")
+    if args.report or not any(vars(args).values()):
+        print(hermes.generate_report())
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -634,4 +775,4 @@ def demo():
 
 
 if __name__ == "__main__":
-    demo()
+    main()

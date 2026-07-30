@@ -1,0 +1,29 @@
+START 2026-07-22T14:00:18.477748 queries=20 max=5 manual_urls=1
+OK_CHANNEL input_urls.txt: https://www.youtube.com/@raizesdafecountry entries=10
+OK country blues gospel: 0
+OK country gospel blues: 0
+OK southern gospel blues: 0
+OK christian country blues: 0
+OK dark country gospel: 0
+OK outlaw gospel: 1
+OK swamp gospel blues: 0
+OK gospel blues sertanejo: 0
+OK country blues gospel português: 0
+OK louvor country gospel: 0
+OK música gospel rural: 0
+OK sertanejo gospel raiz: 0
+OK gospel blues brasileiro: 0
+OK oração de madrugada gospel blues: 0
+OK country gospel em português: 0
+OK blues cristiano country: 0
+OK gospel blues español: 0
+OK country gospel en español: 0
+OK música cristiana country blues: 0
+OK alabanza country blues: 0
+START 2026-07-22T14:03:43.811750 queries=1 max=5 manual_urls=0
+OK country blues gospel: 0
+START 2026-07-22T14:03:56.400011 queries=1 max=5 manual_urls=1
+OK_CHANNEL input_urls.txt: https://www.youtube.com/@raizesdafecountry entries=10
+OK country blues gospel: 0
+START 2026-07-22T14:07:16.122633 queries=20 max=1 manual_urls=1
+OK_CHANNEL input_urls.txt: https://www.youtube.com/@raizesdafecountry entries=10
