@@ -1,0 +1,9 @@
+[Unit]
+Description=Dispara a pauta diaria do Music Factory as 06:00
+
+[Timer]
+OnCalendar=*-*-* 06:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

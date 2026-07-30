@@ -1,0 +1,13 @@
+[Unit]
+Description=Music Factory - pauta diaria por nicho
+After=network-online.target
+
+[Service]
+Type=oneshot
+# ajuste User e caminho conforme o VPS
+User=%i
+WorkingDirectory=/opt/music-factory
+Environment=MUSIC_FACTORY_OUT=/var/music-factory/out
+Environment=MUSIC_FACTORY_DB=/var/music-factory/factory.db
+Environment=MUSIC_FACTORY_LOG=/var/music-factory/logs
+ExecStart=/usr/bin/env bash /opt/music-factory/jobs/run_all_niches.sh
