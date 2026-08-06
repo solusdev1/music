@@ -1,0 +1,137 @@
+{
+  "version": "2026-08-06",
+  "purpose": "Daily YouTube music opportunity radar for the user's current channels plus prioritized new long-form discoveries.",
+  "rules": {
+    "playlist_first": true,
+    "prefer_long_form_minutes_min": 60,
+    "label_public_metrics_as_directional": true,
+    "retry_timeouts": true,
+    "separate_current_niches_from_new_discoveries": true,
+    "do_not_mix_noir_pulse_with_afro_house_identity": true
+  },
+  "priority_order": [
+    "current_ptbr_country_gospel_blues",
+    "current_spanish_gospel_blues",
+    "current_dark_deep_house_noir_pulse",
+    "current_jazz_lounge",
+    "discovery_christian_sleep_ambient",
+    "discovery_dark_academia_piano",
+    "discovery_afro_deep_house",
+    "discovery_cinematic_celtic_ambient",
+    "discovery_latin_gospel_lofi"
+  ],
+  "niches": {
+    "current_ptbr_country_gospel_blues": {
+      "type": "current",
+      "priority": 1,
+      "read": "Country Blues e Fé / PT-BR Gospel Blues. Keep long playlists as main product. Look for dor + consolo + Deus + acalmar + 1h+.",
+      "queries": [
+        "Country Gospel Blues português 1 hora louvores para acalmar o coração",
+        "Sertanejo Country Gospel 1 hora Deus conhece sua dor",
+        "Country Blues Gospel português playlist completa oração madrugada",
+        "Louvores Country Gospel para renovar fé 1H30",
+        "Deus viu suas lágrimas country gospel blues 1 hora",
+        "Quando você não aguenta mais louvores country gospel"
+      ]
+    },
+    "current_spanish_gospel_blues": {
+      "type": "current",
+      "priority": 2,
+      "read": "Spanish Gospel Blues / El Camino. Keep Spanish clean; focus Dios/Jesús/oración/cruz/redención/fe, prayer/rest titles, 1h+.",
+      "queries": [
+        "Gospel Blues en español 1 hora alabanzas para orar dormir",
+        "Dios conoce tu dolor Gospel Blues en Español 1 hora",
+        "Música cristiana blues español para descansar oración",
+        "Blues Cristiano en español alabanzas cristianas 1H30",
+        "Cuando ya no puedes más gospel blues en español",
+        "Dios escuchó tu oración alabanzas gospel blues"
+      ]
+    },
+    "current_dark_deep_house_noir_pulse": {
+      "type": "current",
+      "priority": 3,
+      "read": "Noir Pulse / Dark Deep House. Focus no vocals, after 2AM, dark/night/focus, 1h30-2h. Medieval Castle Rave is a current visual angle.",
+      "queries": [
+        "dark deep house mix no vocals 2 hour night drive",
+        "after 2am dark deep house mix focus no vocals",
+        "dark progressive house mix no vocals 1 hour 2026",
+        "medieval castle rave dark deep house mix",
+        "dark deep house no vocals night drive mix",
+        "1h30 dark deep house mix no vocals focus"
+      ]
+    },
+    "current_jazz_lounge": {
+      "type": "current",
+      "priority": 4,
+      "read": "Jazz/Lounge. Strong but saturated. Watch cozy/night/coffee/rain/work/study/relax packaging and long playlists.",
+      "queries": [
+        "cozy night jazz 1 hour smooth jazz for work study coffee",
+        "smooth jazz lounge 1 hour 30 relaxing instrumental",
+        "rainy night jazz coffee shop ambience 2026",
+        "jazz cafe music for work study relaxing 1 hour",
+        "cozy coffee shop jazz smooth piano work study",
+        "night jazz lounge instrumental 1h30"
+      ]
+    },
+    "discovery_christian_sleep_ambient": {
+      "type": "new_discovery",
+      "priority": 5,
+      "read": "New priority discovery. Christian Sleep Ambient / Soaking Worship instrumental 3h-10h. Watch sleep, prayer, healing, rain, Bible, black screen.",
+      "queries": [
+        "christian sleep music 8 hours healing prayer instrumental",
+        "soaking worship instrumental sleep music no words",
+        "bible sleep music peaceful instrumental 3 hours",
+        "Christian sleep music rain sounds prayer 10 hours",
+        "soaking worship instrumental prayer rest Jesus 3 hours"
+      ]
+    },
+    "discovery_dark_academia_piano": {
+      "type": "new_discovery",
+      "priority": 6,
+      "read": "New discovery. Dark Academia Piano / Gothic Study / Castle Rain. Good for study/reading/rain/castle long-form.",
+      "queries": [
+        "dark academia classical music 1 hour studying rain",
+        "dark academia piano playlist for reading 1 hour",
+        "gothic study music dark academia ambience",
+        "gothic library piano rain study music 2 hours",
+        "dark academia reading music castle rain"
+      ]
+    },
+    "discovery_afro_deep_house": {
+      "type": "new_discovery",
+      "priority": 7,
+      "read": "Strong electronic opportunity, but keep separate from Noir Pulse identity unless user explicitly creates another series/channel.",
+      "queries": [
+        "afro deep house mix 2026 1 hour no vocals",
+        "afro house sunset mix 1 hour deep house",
+        "afro melodic house mix 2026 long mix",
+        "Afro House 2026 deep melodic set 1 hour",
+        "tribal afro house emotional melodic beats long mix"
+      ]
+    },
+    "discovery_cinematic_celtic_ambient": {
+      "type": "new_discovery",
+      "priority": 8,
+      "read": "Visual/ambient opportunity. Celtic/Medieval/Castle/Tavern ambient; useful for castle aesthetic and possible future instrumental channel.",
+      "queries": [
+        "celtic ambient music 1 hour medieval fantasy relaxing",
+        "medieval ambient music castle rain 1 hour",
+        "dark celtic ambient music for studying 1 hour",
+        "medieval castle ambience music rain study",
+        "fantasy medieval music castle tavern 2 hours"
+      ]
+    },
+    "discovery_latin_gospel_lofi": {
+      "type": "new_discovery",
+      "priority": 9,
+      "read": "Lower-priority discovery. Test as playlist/package before channel. Watch Spanish Christian lofi for prayer/study/work.",
+      "queries": [
+        "música cristiana lofi para estudiar orar 1 hora",
+        "lofi cristiano en español para dormir estudiar",
+        "christian lofi beats prayer study 1 hour",
+        "lofi cristiano salmos para trabajar orar",
+        "Spanish Christian lofi study prayer music"
+      ]
+    }
+  }
+}
