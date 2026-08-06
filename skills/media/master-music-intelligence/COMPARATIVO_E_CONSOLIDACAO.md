@@ -1,5 +1,10 @@
 # 🎵 HERMES vs CLAUDE: COMPARATIVO E CONSOLIDAÇÃO
 
+> ⚠️ **Nota de honestidade (2026-08)**: as métricas de tendência citadas
+> aqui são dados sintéticos de exemplo, não medições — ver nota em
+> `README.md` e no topo de `hermes_master_music_intelligence.py`. Para
+> desempenho real dos canais, use `music-factory/data/*.db`.
+
 ## O Que Você Tinha (Hermes)
 
 ```

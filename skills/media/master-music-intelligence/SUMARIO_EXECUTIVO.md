@@ -1,5 +1,12 @@
 # 🎯 ANÁLISE CONSOLIDADA: EMERGENT MUSIC STYLES NO YOUTUBE (ÚLTIMOS 3 MESES)
 
+> ⚠️ **Nota de honestidade (2026-08)**: este resumo (2024) recomenda
+> Sertanejo Trap Gospel com base em dados sintéticos de exemplo, não
+> medições reais — e nenhum canal desse gênero foi lançado. O canal real
+> que este projeto de fato opera no gênero mais próximo (Country Blues e
+> Fé) é hoje o melhor desempenho medido entre os canais ativos (ver
+> `../../../ANALISE-2026-07-30.md`). Trate como artefato histórico.
+
 ## 📊 SUMMARY EXECUTIVO
 
 **Periodo**: Maio-Julho 2024  

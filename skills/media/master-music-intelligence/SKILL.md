@@ -1,6 +1,6 @@
 ---
 name: master-music-intelligence
-description: "Consolidated music intelligence skill: trend analysis (8 genres), conflict resolution (Radar vs Claude), production pipeline, channel analytics, and persistent memory with auto-versioning."
+description: "Music intelligence skill: real ingested YouTube radar data + a SYNTHETIC example trend table (8 genres, not measured — see honesty note), conflict-resolution demo, production-pipeline templates, and channel-analytics storage. Prefer music-factory/data/*.db for real, current channel performance."
 version: 1.1.0
 author: Claude Code Agent
 license: MIT
@@ -14,8 +14,16 @@ metadata:
 
 # Master Music Intelligence Skill (v1.1)
 
-**Status**: PRODUCTION READY  
-**Auto-updates**: YES (version increments on each use)  
+> ⚠️ **Honesty note (2026-08):** the "8 Emerging Genres" table and default
+> recommendations in this skill are **synthetic example data**, not measured
+> trends — see the header comment in `hermes_master_music_intelligence.py`
+> and the caveat in `README.md`. "Auto-updates" below refers to code that
+> exists (`auto_update()`) but is **never called** from any CLI path — the
+> version number is bumped by hand. For real channel performance, use
+> `music-factory/data/*.db`, not this file's genre table.
+
+**Status**: Real ingestion (`--add-channels-hermes`) + synthetic demo data (`--add-trends-claude`, `--add-recommendations`) — see note above  
+**Auto-updates**: code exists, not wired to any CLI path (see note above)  
 **Persistent Memory**: SQLite + JSON backups
 
 ---
@@ -55,7 +63,7 @@ python hermes_master_music_intelligence.py --guide phonk
 
 ---
 
-## 8 Emerging Genres
+## 8 Emerging Genres (⚠️ synthetic example data, not measured — see note above)
 
 | Genre | Growth | Saturation | Score |
 |-------|--------|-----------|-------|
@@ -131,10 +139,9 @@ python hermes_master_music_intelligence.py \
 
 ## Status
 
-✅ **Production Ready**  
-✅ **Auto-updates** (version increments on each use)  
-✅ **Persistent Memory** (SQLite + JSON backups)  
-✅ **Continuous Learning** (improves over time)
+✅ **Real radar ingestion** (`--add-channels-hermes`) and persistent storage (SQLite + JSON backups)  
+⚠️ **Trend table & default recommendations are synthetic demo data** — see honesty note above  
+⚠️ **"Auto-updates"/"Continuous Learning"**: `auto_update()` exists but is dead code (never invoked)
 
 ---
 

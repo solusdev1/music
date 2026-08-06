@@ -15,6 +15,18 @@ Integração completa de:
 Version: 1.0.0 (Auto-updated on each use)
 Last Updated: 2024-07-30
 Memory: SQLite + JSON Backup
+
+⚠️ HONESTY NOTE (2026-08): `CLAUDE_TRENDS` and `add_default_recommendations()`
+below are a SYNTHETIC/ILLUSTRATIVE example dataset seeded when this skill was
+first written — the growth %, engagement and "confidence" figures are not
+measured from any API or scrape. They are not kept in sync with reality and
+must not be treated as market intelligence. The only real, measured
+performance data for this project's actual channels (Country Blues e Fé,
+Estrada da Fé, Southern Grace Roads, etc.) lives in
+`music-factory/data/*.db` (see `music-factory/core/learn.py` and
+`core/opportunity.py`) and in `youtube_music_ops/radar/` (real TranscriptAPI/
+yt-dlp scrapes). Prefer those sources over this file's seed data for any
+real decision.
 """
 
 import argparse
@@ -25,6 +37,17 @@ import os
 from datetime import datetime, UTC
 from pathlib import Path
 from typing import Dict, List, Any, Optional
+
+
+def _fmt_num(value, decimals: int = 2) -> str:
+    """Format a possibly-missing numeric DB value without crashing.
+
+    Real ingested rows (not the synthetic seed) can legitimately have
+    NULL growth/engagement columns; ``f"{None:.2f}"`` raises TypeError.
+    """
+    if value is None:
+        return "—"
+    return f"{value:.{decimals}f}"
 
 
 class HermesmasterMusicIntelligence:
@@ -297,27 +320,42 @@ class HermesmasterMusicIntelligence:
         return None
 
     def _resolve_conflict(self, style: str, radar_data: Dict, claude_data: Dict) -> str:
-        """Resolve conflicts using weighted scoring."""
+        """Resolve conflicts using weighted scoring.
+
+        CAVEAT: the "Claude" side of this comparison is, for most styles,
+        the synthetic `CLAUDE_TRENDS` seed table (see module docstring) —
+        not a live analysis. Do not read "Claude está correto" below as a
+        real verdict; it is this function's original hardcoded example.
+        """
         # Claude tem mais dados históricos e análise profunda
         claude_weight = 0.6
         radar_weight = 0.4
 
-        # Exemplo: Country Blues
+        # Exemplo original (2024): Country Blues
         # Radar diz: "Indo bem, sem saturação"
-        # Claude diz: "100+ canais, crescimento lento 45%, saturado"
-        # Resolução: Claude está certo (tem dados mais abrangentes)
-
+        # Claude (seed sintético) diz: "100+ canais, crescimento lento 45%, saturado"
+        #
+        # Esse exemplo envelheceu mal: o acervo real do projeto (music-factory)
+        # mede Country Blues e Fé como o canal de MELHOR desempenho medido
+        # (ver ANALISE-2026-07-30.md e music-factory/data/*.db), contradizendo
+        # o placeholder "saturado" abaixo. Mantido apenas como amostra de
+        # como o resolvedor de conflito funciona — não use para decidir nada.
         if style.lower() == "country blues gospel":
             return (
-                "⚠️ DIVERGÊNCIA DETECTADA:\n"
+                "⚠️ EXEMPLO ILUSTRATIVO (não é veredito real):\n"
                 "  Radar: Country Blues está indo bem\n"
-                "  Claude: Country Blues está saturado (100+ canais, 45% crescimento)\n"
-                "  RESOLUÇÃO: Claude está correto (análise mais abrangente)\n"
-                "  Confiança: 85% (Claude tem histórico de 3+ meses)"
+                "  Claude (seed sintético): Country Blues está saturado (100+ canais, 45% crescimento)\n"
+                "  Dado real medido no próprio projeto: Country Blues e Fé é o canal com "
+                "melhor desempenho medido — o placeholder 'saturado' está desatualizado/incorreto.\n"
+                "  → Confie em music-factory/data/*.db, não nesta amostra."
             )
 
-        # Padrão geral: Claude é mais conservador e correto
-        return f"Claude analysis is more reliable (weight: {claude_weight}). Radar weight: {radar_weight}"
+        # Padrão geral: nota de exemplo, não recomendação
+        return (
+            f"Exemplo de resolução ponderada (Claude peso {claude_weight}, Radar peso "
+            f"{radar_weight}) — placeholder ilustrativo, sem dado real por trás para "
+            f"'{style}'."
+        )
 
     def log_conflict(self, style: str, radar_opinion: str, claude_opinion: str, resolution: str):
         """Log conflict for future reference."""
@@ -470,6 +508,7 @@ class HermesmasterMusicIntelligence:
 
     def generate_report(self) -> str:
         """Generate comprehensive analysis report."""
+        synthetic_n = sum(1 for d in self.trends.values() if d.get('data_source') == 'claude+repo-seed')
         report = f"""
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║           🎵 HERMES MASTER MUSIC INTELLIGENCE REPORT                        ║
@@ -482,13 +521,20 @@ class HermesmasterMusicIntelligence:
 
 📈 TREND ANALYSIS ({len(self.trends)} styles tracked):
 """
+        if synthetic_n:
+            report += (
+                f"⚠️  {synthetic_n} of {len(self.trends)} records are SYNTHETIC seed data "
+                "(illustrative, not measured — see module docstring).\n"
+                "   Real measured performance for this project's channels lives in "
+                "music-factory/data/*.db.\n"
+            )
 
         if self.trends:
-            for style, data in sorted(self.trends.items(), key=lambda x: x[1].get('growth_percentage', 0), reverse=True)[:5]:
+            for style, data in sorted(self.trends.items(), key=lambda x: x[1].get('growth_percentage') or 0, reverse=True)[:5]:
                 report += f"\n  ✅ {style}"
-                report += f"\n     • Growth: {data.get('growth_percentage')}%"
-                report += f"\n     • Saturation: {data.get('saturation_level')}"
-                report += f"\n     • Engagement: {data.get('avg_engagement'):.2f}%"
+                report += f"\n     • Growth: {_fmt_num(data.get('growth_percentage'))}%"
+                report += f"\n     • Saturation: {data.get('saturation_level') or '—'}"
+                report += f"\n     • Engagement: {_fmt_num(data.get('avg_engagement'))}%"
 
         report += f"\n\n📺 CHANNEL ANALYSIS ({len(self.channels)} channels tracked):"
         if self.channels:
@@ -500,19 +546,20 @@ class HermesmasterMusicIntelligence:
                 channels_by_style[style].append(ch)
 
             for style, channels in sorted(channels_by_style.items())[:5]:
-                avg_eng = sum(c.get('engagement_rate', 0) for c in channels) / len(channels)
+                vals = [c.get('engagement_rate') or 0 for c in channels]
+                avg_eng = sum(vals) / len(vals)
                 report += f"\n  ✅ {style}: {len(channels)} channels, avg engagement {avg_eng:.2f}%"
 
         report += f"\n\n⚠️  CONFLICTS DETECTED ({len(self.conflicts)}):"
         if self.conflicts:
             for conflict in self.conflicts[-3:]:  # Últimos 3
                 report += f"\n  ⚠️  {conflict.get('style')}: {conflict.get('divergence_level')} divergence"
-                report += f"\n     → Resolution: {conflict.get('resolution')[:80]}..."
+                report += f"\n     → Resolution: {(conflict.get('resolution') or '')[:80]}..."
 
         report += f"\n\n✅ TOP RECOMMENDATIONS:"
         for rec in self.get_recommendations(3):
             report += f"\n  {rec.get('rank')}. {rec.get('style')} (Score: {rec.get('score')})"
-            report += f"\n     → {rec.get('reasoning')[:60]}..."
+            report += f"\n     → {(rec.get('reasoning') or '')[:60]}..."
 
         report += f"\n\n💾 MEMORY STATUS: {len(self.trends)} trends + {len(self.channels)} channels + {len(self.conflicts)} conflicts"
         report += f"\n📁 DATABASE: {self.db_path}"
@@ -555,6 +602,14 @@ SKILL_DIR = Path(__file__).resolve().parent
 RADAR_REFERENCE_DIR = SKILL_DIR / "references" / "youtube_radar_agent"
 
 
+# ⚠️ SYNTHETIC EXAMPLE DATA — not measured, not sourced, not kept up to date.
+# Written as illustrative seed data when this skill was first built. None of
+# these genres correspond to a channel this project actually operates (all
+# real channels are Country/Gospel Blues PT/EN/ES — see music-factory/niches/).
+# Growth %, engagement and saturation here are invented numbers for demoing
+# the trend-analysis/conflict-resolution code paths. For real numbers, load
+# `add_radar_channels()` (real yt-dlp scrapes) or read music-factory's
+# `data/*.db` directly.
 CLAUDE_TRENDS = {
     "Phonk": {"growth_percentage": 234, "new_channels": 88, "total_views": 4281000, "avg_engagement": 4.69, "saturation_level": "Very Low"},
     "Hyperpop": {"growth_percentage": 245, "new_channels": 74, "total_views": 3920000, "avg_engagement": 4.42, "saturation_level": "Very Low"},
@@ -630,11 +685,20 @@ def add_radar_channels(hermes: HermesmasterMusicIntelligence, radar_dir: Path = 
 
 
 def add_default_recommendations(hermes: HermesmasterMusicIntelligence) -> None:
+    """Seed illustrative example recommendations — SYNTHETIC, not real scoring.
+
+    None of these ranks/scores come from measurement; they demo the
+    ``recommendations`` table shape. Ironically, rank #4 here ("já
+    concorrido"/crowded) is this project's actual best-performing real
+    channel (Country Blues e Fé — see music-factory/data/*.db), and ranks
+    1-3 correspond to genres with zero production infrastructure in this
+    repo. Do not use this seed to steer real channel strategy.
+    """
     recommendations = [
-        ("Sertanejo Trap Gospel", 1, 452, "Maior janela estratégica gospel BR: 52 novos canais e público rural/interior claro", "HIGH"),
-        ("Trap Gospel", 2, 445, "Crescimento forte e engajamento alto com baixa saturação relativa", "HIGH"),
-        ("Phonk", 3, 440, "Score global alto para beats dark, shorts e colaborações com rappers", "HIGH"),
-        ("Country Blues Gospel", 4, 365, "Nicho já concorrido, mas útil para playlists longas e promessas emocionais em PT-BR", "MEDIUM"),
+        ("Sertanejo Trap Gospel", 1, 452, "[SYNTHETIC] Maior janela estratégica gospel BR: 52 novos canais e público rural/interior claro", "SYNTHETIC-DEMO"),
+        ("Trap Gospel", 2, 445, "[SYNTHETIC] Crescimento forte e engajamento alto com baixa saturação relativa", "SYNTHETIC-DEMO"),
+        ("Phonk", 3, 440, "[SYNTHETIC] Score global alto para beats dark, shorts e colaborações com rappers", "SYNTHETIC-DEMO"),
+        ("Country Blues Gospel", 4, 365, "[SYNTHETIC score, but the REAL channel is this project's top performer per music-factory/data/*.db — treat this rank as wrong]", "SYNTHETIC-DEMO"),
     ]
     conn = sqlite3.connect(hermes.db_path)
     cursor = conn.cursor()

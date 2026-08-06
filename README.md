@@ -1,134 +1,45 @@
-# 🎵 Master Music Intelligence
+# music
 
-**Consolidated Music Intelligence System for YouTube Creators**
+Operator toolkit for running a small family of real, human-curated AI-music
+YouTube channels (gospel/country/blues, PT-BR/EN/ES, plus one instrumental
+sleep channel). Three subsystems live here, at different levels of maturity:
 
-A production-ready skill that combines music production expertise with comprehensive trend analysis, featuring persistent memory, auto-versioning, and intelligent conflict resolution.
+| Subsystem | Status | What it does |
+|---|---|---|
+| **[`music-factory/`](music-factory/README.md)** | ✅ Production, tested | The real engine: catalog, three independent anti-repetition cooldowns (track/theme/hook), playlist assembly, quality (vocabulary/rhyme saturation) checks, VIDIQ-cache-driven theme opportunity, and real channel-performance analytics (views/day, hook-collision detection, health/abandon verdicts). Runs daily via a systemd timer. **56 pytest tests**, CI on push. |
+| **[`youtube_music_ops/`](youtube_music_ops/README.md)** | ✅ Real, standalone | External-API opportunity radar (TranscriptAPI, with an automatic yt-dlp fallback) exploring prospective niches. **Not wired into `music-factory`** — see its README for the gap. |
+| **[`skills/media/master-music-intelligence/`](skills/media/master-music-intelligence/README.md)** | ⚠️ Mixed | Real ingested radar data alongside a **synthetic, invented "8 emerging genres" trend table** (Phonk/Hyperpop/Amapiano/etc.) that predates `music-factory`, doesn't correspond to any channel actually operated, and was never kept in sync with the real, measured results. Now clearly labeled in-code and in its own README as illustrative, not market intelligence — read the caveats there before trusting anything it prints. |
 
-## Quick Overview
+**If you're deciding what to work on next, start in `music-factory/` — that's
+where the real channels, real data, and real automation live.** The other
+two are radar/research tools that feed *ideas* into that engine, manually.
 
-```
-✅ 8 Emerging Music Genres  - Phonk, Hyperpop, Indie Bedroom Pop, Reggaeton Trap, Emo Rap, Amapiano, Hyperpunk, Synthwave
-✅ Saturation Detection     - Identifies emerging, growing, or saturated styles
-✅ Conflict Resolution      - Intelligently weighs Radar vs Claude data
-✅ Production Pipeline      - Complete Suno + YouTube metadata packages
-✅ Daily Analytics          - Track views, engagement, patterns, benchmarks
-✅ Persistent Memory        - SQLite database with auto-versioning
-✅ Fed with Hermes Assets   - Country Blues e Fé radar history + Suno packages
-✅ Continuous Learning      - Improves recommendations on each use
-```
+## Current channels (from `music-factory/niches/*.json`)
 
-## Getting Started
+| Channel | Language | Notes |
+|---|---|---|
+| Country Blues e Fé | pt-BR | Best real measured performer |
+| Estrada da Fé | pt-BR | Underperforming — abandon/migrate candidate |
+| El Camino de la Fé | es | |
+| Blues & Praises (`country_blues_en`) | en-US | |
+| Southern Grace Roads | en-US | First batch delivered 2026-07-30 |
+| Peaceful Deep Sleep Music | en-US | Instrumental only |
 
-```bash
-# Initialize
-python skills/media/master-music-intelligence/hermes_master_music_intelligence.py --init
+Shorts are explicitly discontinued across all six channels (operator
+decision, `"shorts_policy": "nenhum"` in every niche config).
 
-# Load data bundled in the repository
-python skills/media/master-music-intelligence/hermes_master_music_intelligence.py --add-trends-claude
-python skills/media/master-music-intelligence/hermes_master_music_intelligence.py --add-channels-hermes
-python skills/media/master-music-intelligence/hermes_master_music_intelligence.py --add-recommendations
+## Repo-wide known gaps (as of 2026-08)
 
-# Get recommendations
-python skills/media/master-music-intelligence/hermes_master_music_intelligence.py --report
-
-# Get production guides
-python skills/media/master-music-intelligence/hermes_master_music_intelligence.py --guide phonk
-```
-
-## The 8 Opportunities
-
-| Genre | Growth | Saturation | Best For |
-|-------|--------|-----------|----------|
-| **Phonk** | 234% | Very Low | Rappers, beat producers |
-| **Hyperpop** | 245% | Very Low | Electronic producers, Gen Z |
-| **Indie Bedroom Pop** | 167% | Low | Singer-songwriters, lo-fi |
-| **Reggaeton Trap** | 198% | Low | Rappers, Latin creators |
-| **Emo Rap** | 176% | Low | Rappers, emotional artists |
-| **Amapiano** | 212% | Emerging | Global producers |
-| **Hyperpunk** | 223% | Low | Experimental musicians |
-| **Synthwave** | 189% | Low | Retro-electronic, gaming |
-
-## Files
-
-```
-skills/media/master-music-intelligence/
-├── hermes_master_music_intelligence.py     # Main Python implementation
-├── SKILL.md                                # Skill metadata
-├── README.md                               # This overview
-├── HERMES_MASTER_SKILL_INTEGRATED.md      # Complete technical guide
-├── COMPARATIVO_E_CONSOLIDACAO.md          # Comparison & consolidation
-├── ANALISE_ABRANGENTE_ESTILOS_MUSICAIS.md # 8 genres analysis
-├── SUMARIO_EXECUTIVO.md                   # Executive summary
-├── data/                                  # Seed SQLite + JSON export
-├── references/youtube_radar_agent/         # Migrated radar agent and outputs
-├── config/                                 # Configuration files
-├── scripts/                                # Automation scripts
-├── templates/                              # Production templates
-└── references/                             # Reference materials
-```
-
-## Key Features
-
-### Trend Analysis
-Analyzes 8 emerging music genres across YouTube, TikTok, Reddit, and other platforms with growth metrics, saturation levels, and engagement data.
-
-### Conflict Resolution
-When real-time Radar data conflicts with historical Claude Analysis, uses intelligent weighted scoring (Claude 60%, Hermes 40%) to determine the best recommendation.
-
-### Production Pipeline
-Generates complete production packages including Suno style prompts, lyrics, video loop prompts, YouTube metadata (titles, descriptions, hashtags), thumbnail guidance, and pinned comments.
-
-### Channel Analytics
-Daily tracking of views, engagement rates, subscriber growth, posting frequency, title/description/hashtag patterns, and competitor benchmarking.
-
-### Persistent Memory
-SQLite database stores all trends, channels, recommendations, decisions, and conflicts. Auto-versioning system tracks improvements over time (1.0.0 → 1.0.1 → 1.1.0...).
-
-## Migrated Hermes Feed
-
-This repo was populated with the assets previously generated under the Hermes YouTube radar agent:
-
-- 14 seeded trend records combining Claude/global intelligence and Gospel BR niches
-- 90 radar channel/video records from ranked CSV snapshots
-- 2026-07-17, 2026-07-22, and 2026-07-30 reports and JSONL raw data
-- Country Blues e Fé input configuration
-- Complete 5-song PT-BR Country Blues Gospel Suno package for 2026-07-30
-
-Seed files now included:
-
-- `skills/media/master-music-intelligence/data/music_intelligence_seed.db`
-- `skills/media/master-music-intelligence/data/music_intelligence_seed.json`
-- `skills/media/master-music-intelligence/references/youtube_radar_agent/`
-
-## Workflow
-
-**Daily**: Run analysis → Load Radar data → Resolve conflicts → Choose style  
-**Weekly**: Generate prompts → Create videos → Prepare metadata  
-**Monthly**: Deep dive on conflicts → Update recommendations → Publish report  
-**Quarterly**: Re-run full analysis → Add new styles → Update saturation levels
-
-## Documentation
-
-- **HERMES_MASTER_SKILL_INTEGRATED.md** - Full technical guide (500+ lines)
-- **COMPARATIVO_E_CONSOLIDACAO.md** - Strategic comparison & roadmap
-- **ANALISE_ABRANGENTE_ESTILOS_MUSICAIS.md** - Detailed genre analysis
-- **SUMARIO_EXECUTIVO.md** - Executive summary
-
-## Status
-
-✅ **Production Ready**  
-✅ **Auto-updates** (version increments on each use)  
-✅ **Persistent Memory** (SQLite + JSON backups)  
-✅ **Continuous Learning** (improves over time)  
-📅 **Maintenance**: Quarterly review recommended
-
-## Version
-
-**Current**: 1.1.0 (2026-07-30)  
-**Auto-increments**: 1.0.0 → 1.0.1 → 1.0.2 → 1.1.0  
-**Status**: Ready for production use
+- No audio, video render, or upload automation anywhere in this repo —
+  Suno generation, mixing, and YouTube upload are manual by design (Suno
+  has no public self-serve API yet as of 2026-08).
+- `youtube_music_ops`'s radar and `music-factory`'s theme-opportunity radar
+  don't share data; bridging them is a manual copy-paste today.
+- See `ANALISE-2026-08-06-HERMES.md` for the current full analysis
+  (code audit + market research + prioritized recommendations).
 
 ---
 
-Generated by Claude Code Agent  
-For questions, see HERMES_MASTER_SKILL_INTEGRATED.md
+Generated by Claude Code Agent. For the previous README's marketing framing
+of the "8 Emerging Genres" skill, see git history — it has been superseded
+by the honesty notes above and in `skills/media/master-music-intelligence/`.

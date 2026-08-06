@@ -145,7 +145,9 @@ def format_report(conn, niche, theme_bank):
               "",
               "  A pauta diária segue funcionando por rodízio simples de temas.",
               "  Para coletar (consome créditos VIDIQ, rode SEMANALMENTE):",
-              f"      python3 cli.py collect-opportunity --niche {niche}"]
+              "      1. Peça ao agente para consultar o MCP VIDIQ (vidiq_keyword_research)",
+              f"      2. python3 cli.py vidiq-ingest --niche {niche} --file <json> --tipo keywords",
+              f"      3. python3 cli.py set-theme-score --niche {niche} --theme \"...\" --score N"]
         return "\n".join(L)
 
     ranked, scores = rank_themes(conn, niche, theme_bank)
