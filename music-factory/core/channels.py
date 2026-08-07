@@ -37,6 +37,8 @@ CREATE TABLE IF NOT EXISTS channels (
     total_views     INTEGER,
     videos          INTEGER,
     pais            TEXT,
+    subs_growth_30d REAL,
+    views_growth_30d REAL,
     origem          TEXT,
     vezes_visto     INTEGER NOT NULL DEFAULT 1,
     primeiro_visto  TEXT NOT NULL,
@@ -136,6 +138,39 @@ def _int(v):
     return int(float(re.sub(r"[.,](?=\d{3}\b)", "", num).replace(",", ".")) * mult)
 
 
+def _idade_dias(v):
+    """Idade em dias a partir de idade, epoch (s ou ms) ou data ISO.
+
+    O VIDIQ devolve `videoPublishedAt` como epoch em segundos, não idade. Sem
+    converter, a recência fica neutra para todo mundo e o radar perde
+    justamente o eixo que separa "começando" de "já aconteceu".
+    """
+    if v is None or isinstance(v, bool):
+        return None
+    if isinstance(v, str):
+        s = v.strip()
+        if not s:
+            return None
+        if not re.fullmatch(r"-?\d+(\.\d+)?", s):
+            try:
+                dt = datetime.fromisoformat(s.replace("Z", "+00:00"))
+            except ValueError:
+                return None
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return max((datetime.now(timezone.utc) - dt).total_seconds() / 86400, 0.0)
+        v = float(s)
+    v = float(v)
+    if v < 0:
+        return None
+    if v > 1e11:        # epoch em milissegundos
+        v /= 1000.0
+    if v > 1e8:         # epoch em segundos (≈1973 em diante)
+        agora = datetime.now(timezone.utc).timestamp()
+        return max((agora - v) / 86400, 0.0)
+    return v            # já veio em dias
+
+
 # ═══════════════════════════════════════════════════════════════════════════
 # CANAIS
 # ═══════════════════════════════════════════════════════════════════════════
@@ -183,7 +218,8 @@ def _achar_channel(conn, niche, channel_id, handle, chave_nome):
 
 
 def save_channel(conn, niche, nome, *, channel_id=None, handle=None, subs=None,
-                 total_views=None, videos=None, pais=None, origem="radar"):
+                 total_views=None, videos=None, pais=None, subs_growth_30d=None,
+                 views_growth_30d=None, origem="radar"):
     """Registra/atualiza um canal do nicho (idempotente).
 
     Reencontrar o mesmo canal incrementa `vezes_visto` — recorrência entre
@@ -207,11 +243,13 @@ def save_channel(conn, niche, nome, *, channel_id=None, handle=None, subs=None,
                    total_views=COALESCE(?, total_views),
                    videos=COALESCE(?, videos),
                    pais=COALESCE(?, pais),
+                   subs_growth_30d=COALESCE(?, subs_growth_30d),
+                   views_growth_30d=COALESCE(?, views_growth_30d),
                    vezes_visto=vezes_visto + 1,
                    ultimo_visto=?
                WHERE id=?""",
             (nome, channel_id, handle, _int(subs), _int(total_views), _int(videos),
-             pais, agora, existente["id"]),
+             pais, subs_growth_30d, views_growth_30d, agora, existente["id"]),
         )
         conn.commit()
         return existente["chave"]
@@ -219,13 +257,15 @@ def save_channel(conn, niche, nome, *, channel_id=None, handle=None, subs=None,
     chave = _chave(channel_id or handle or nome)
     conn.execute(
         """INSERT INTO channels (niche, chave, chave_nome, nome, channel_id, handle,
-               subs, total_views, videos, pais, origem, primeiro_visto, ultimo_visto)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+               subs, total_views, videos, pais, subs_growth_30d, views_growth_30d,
+               origem, primeiro_visto, ultimo_visto)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
            ON CONFLICT(niche, chave) DO UPDATE SET
                vezes_visto=channels.vezes_visto + 1,
                ultimo_visto=excluded.ultimo_visto""",
         (niche, chave, chave_nome, nome, channel_id, handle, _int(subs),
-         _int(total_views), _int(videos), pais, origem, agora, agora),
+         _int(total_views), _int(videos), pais, subs_growth_30d, views_growth_30d,
+         origem, agora, agora),
     )
     conn.commit()
     return chave
@@ -259,6 +299,8 @@ def ingest_channels(conn, niche, payload, *, origem="vidiq"):
             total_views=c.get("viewCount") or c.get("totalViews"),
             videos=c.get("videoCount") or c.get("videos"),
             pais=c.get("country") or c.get("pais"),
+            subs_growth_30d=c.get("subsGrowth30d"),
+            views_growth_30d=c.get("viewsGrowth30d"),
             origem=origem,
         )
         n += 1
@@ -305,13 +347,28 @@ def format_channels_report(conn, niche):
         f"{p}={contagem[p]}" for p in ordem if p in contagem))
 
     L += ["", f"  REPLICÁVEIS (≤{TETO_SUBS_REPLICAVEL:,} inscritos)".replace(",", "."),
-          f"  {'inscritos':>10} {'vezes':>6}  canal", "  " + "-" * 62]
+          f"  {'inscritos':>10} {'+subs30d':>9} {'vezes':>6}  canal", "  " + "-" * 66]
     linhas = concorrentes_replicaveis(conn, niche)
     if not linhas:
         L.append("  nenhum canal pequeno no mapa — o nicho pode estar dominado")
     for r in linhas:
         subs = f"{r['subs']:,}".replace(",", ".") if r["subs"] is not None else "—"
-        L.append(f"  {subs:>10} {r['vezes_visto']:>6}  {r['nome'][:44]}")
+        cres = f"{r['subs_growth_30d']:+.0f}%" if r["subs_growth_30d"] is not None else "—"
+        L.append(f"  {subs:>10} {cres:>9} {r['vezes_visto']:>6}  {r['nome'][:40]}")
+
+    # crescimento de inscritos em 30d é o sinal de "começando" no nível do canal
+    subindo = conn.execute(
+        """SELECT nome, subs, subs_growth_30d FROM channels
+           WHERE niche=? AND subs_growth_30d IS NOT NULL AND subs <= ?
+           ORDER BY subs_growth_30d DESC LIMIT 8""",
+        (niche, TETO_SUBS_REPLICAVEL),
+    ).fetchall()
+    if subindo:
+        L += ["", "  SUBINDO MAIS RÁPIDO (crescimento de inscritos em 30 dias)",
+              f"  {'+subs30d':>9} {'inscritos':>10}  canal", "  " + "-" * 66]
+        for r in subindo:
+            subs = f"{r['subs']:,}".replace(",", ".") if r["subs"] is not None else "—"
+            L.append(f"  {r['subs_growth_30d']:>8.0f}% {subs:>10}  {r['nome'][:40]}")
     return "\n".join(L)
 
 
@@ -386,6 +443,7 @@ def save_breakout(conn, niche, titulo, *, views=None, canal=None, canal_subs=Non
     titulo = (titulo or "").strip()
     if not titulo:
         return None
+    idade_dias = _idade_dias(idade_dias)
     s = score_breakout(views, canal_subs, idade_dias)
     chave = _chave(video_id or f"{titulo}|{canal or ''}")
     conn.execute(
@@ -430,8 +488,9 @@ def ingest_outliers(conn, niche, payload, *, origem="vidiq-outliers"):
             views=v.get("viewCount") or v.get("views"),
             canal=v.get("channelTitle") or v.get("channel"),
             canal_subs=v.get("subscriberCount") or v.get("channelSubscribers"),
-            idade_dias=v.get("ageDays") or v.get("age_days_est")
-            or v.get("daysSincePublished"),
+            idade_dias=(v.get("ageDays") or v.get("age_days_est")
+                        or v.get("daysSincePublished")
+                        or v.get("videoPublishedAt") or v.get("publishedAt")),
             video_id=v.get("videoId") or v.get("id"),
             url=v.get("url") or v.get("videoUrl"),
             duracao_sec=v.get("duration") or v.get("durationSeconds"),

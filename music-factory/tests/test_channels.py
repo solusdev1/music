@@ -214,3 +214,50 @@ def test_relatorio_de_breakout_nao_quebra_com_campo_faltando(conn):
     channels.save_breakout(conn, "n", "sem canal", views=50_000, idade_dias=3)
     saida = channels.format_breakout_report(conn, "n")
     assert "sem canal" in saida
+
+
+# ─── formatos que só apareceram rodando com dados reais ──────────────────
+
+def test_idade_aceita_epoch_iso_e_dias():
+    """O VIDIQ manda `videoPublishedAt` em epoch, não idade em dias."""
+    import time
+    agora = time.time()
+    assert round(channels._idade_dias(agora - 5 * 86400)) == 5
+    assert round(channels._idade_dias((agora - 5 * 86400) * 1000)) == 5   # ms
+    assert channels._idade_dias(7) == 7.0                                  # já em dias
+    assert channels._idade_dias("2020-01-01T00:00:00Z") > 1000
+    for lixo in (None, "", "abc", True):
+        assert channels._idade_dias(lixo) is None
+
+
+def test_ingest_outliers_deriva_idade_do_publishedat(conn):
+    """Sem derivar, a recência fica neutra e o radar perde o eixo principal."""
+    import time
+    payload = {"videos": [{
+        "videoTitle": "recente", "viewCount": 60_000, "channelTitle": "C",
+        "subscriberCount": 2_000, "videoPublishedAt": time.time() - 5 * 86400,
+        "videoId": "novo",
+    }, {
+        "videoTitle": "antigo", "viewCount": 60_000, "channelTitle": "D",
+        "subscriberCount": 2_000, "videoPublishedAt": time.time() - 400 * 86400,
+        "videoId": "velho",
+    }]}
+    channels.ingest_outliers(conn, "n", payload)
+    por_titulo = {r["titulo"]: r for r in channels.listar_breakouts(conn, "n")}
+    assert round(por_titulo["recente"]["idade_dias"]) == 5
+    assert por_titulo["recente"]["score"] > 0
+    assert por_titulo["antigo"]["score"] == 0
+
+
+def test_ingest_channels_guarda_crescimento_30d(conn):
+    """Crescimento de inscritos é o 'começando a viralizar' no nível do canal."""
+    channels.ingest_channels(conn, "n", {"channels": [
+        {"channelTitle": "Rápido", "channelId": "U1", "subscriberCount": 1_290,
+         "subsGrowth30d": 170.44, "viewsGrowth30d": 134.79},
+        {"channelTitle": "Parado", "channelId": "U2", "subscriberCount": 3_210,
+         "subsGrowth30d": 1.9},
+    ]})
+    r = {c["nome"]: c for c in channels.listar_channels(conn, "n")}
+    assert r["Rápido"]["subs_growth_30d"] == 170.44
+    assert r["Rápido"]["views_growth_30d"] == 134.79
+    assert "SUBINDO MAIS RÁPIDO" in channels.format_channels_report(conn, "n")
