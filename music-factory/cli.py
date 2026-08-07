@@ -16,7 +16,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from core import brief, catalog, db, learn, opportunity, playlist, quality, vidiq  # noqa: E402
+from core import (brief, catalog, channels, db, learn, opportunity, playlist,  # noqa: E402
+                  quality, vidiq)
 
 BASE = Path(__file__).resolve().parent
 NICHES_DIR = BASE / "niches"
@@ -176,6 +177,30 @@ def cmd_radar_approve(args, conn):
     print(f"✅ aprovada. Copie para o campo `temas` de niches/{args.niche}.json")
 
 
+def cmd_breakout(args, conn):
+    print(channels.format_breakout_report(conn, args.niche))
+
+
+def cmd_breakout_ingest(args, conn):
+    import json as _json
+    payload = _json.loads(Path(args.file).read_text(encoding="utf-8"))
+    n = channels.ingest_outliers(conn, args.niche, payload)
+    print(f"✅ {n} vídeo(s) pontuado(s) em {args.niche}\n")
+    print(channels.format_breakout_report(conn, args.niche))
+
+
+def cmd_channels(args, conn):
+    print(channels.format_channels_report(conn, args.niche))
+
+
+def cmd_channels_ingest(args, conn):
+    import json as _json
+    payload = _json.loads(Path(args.file).read_text(encoding="utf-8"))
+    n = channels.ingest_channels(conn, args.niche, payload)
+    print(f"✅ {n} canal(is) gravado(s) em {args.niche}\n")
+    print(channels.format_channels_report(conn, args.niche))
+
+
 def cmd_vidiq(args, conn):
     print(vidiq.format_report(conn, args.niche))
 
@@ -298,7 +323,7 @@ def main(argv=None):
     s.add_argument("--incluir-sem-audio", action="store_true")
     s.set_defaults(func=cmd_migrate)
 
-    s = sub.add_parser("radar", help="ideias novas de música pendentes")
+    s = sub.add_parser("radar", help="breakouts, canais e ideias pendentes do nicho")
     s.add_argument("--niche", required=True)
     s.set_defaults(func=cmd_radar)
 
@@ -313,6 +338,26 @@ def main(argv=None):
     s.add_argument("--niche", required=True)
     s.add_argument("--ideia", required=True)
     s.set_defaults(func=cmd_radar_approve)
+
+    s = sub.add_parser("breakout", help="o que está começando a viralizar")
+    s.add_argument("--niche", required=True)
+    s.set_defaults(func=cmd_breakout)
+
+    s = sub.add_parser("breakout-ingest",
+                       help="ingere JSON de vidiq_outliers / vidiq_trending_videos")
+    s.add_argument("--niche", required=True)
+    s.add_argument("--file", required=True)
+    s.set_defaults(func=cmd_breakout_ingest)
+
+    s = sub.add_parser("channels", help="canais mapeados e replicáveis do nicho")
+    s.add_argument("--niche", required=True)
+    s.set_defaults(func=cmd_channels)
+
+    s = sub.add_parser("channels-ingest",
+                       help="ingere JSON de vidiq_channel_search / similar_channels")
+    s.add_argument("--niche", required=True)
+    s.add_argument("--file", required=True)
+    s.set_defaults(func=cmd_channels_ingest)
 
     s = sub.add_parser("vidiq", help="keywords coletadas e espaço aberto")
     s.add_argument("--niche", required=True)

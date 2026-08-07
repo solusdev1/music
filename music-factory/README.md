@@ -104,6 +104,51 @@ python3 cli.py radar-approve --niche country_blues_fe --ideia "..."
 Avisa quando o banco de temas cai abaixo de 30 — com 5 músicas/dia e descanso
 de 60 dias, abaixo disso o rodízio esgota e passa a reaproveitar tema antigo.
 
+O `radar` mostra, nesta ordem: saúde do banco de temas → o que está começando a
+viralizar → canais replicáveis → ideias pendentes.
+
+---
+
+## Começando a viralizar — o que copiar
+
+```bash
+python3 cli.py breakout-ingest --niche country_blues_fe --file outliers.json
+python3 cli.py breakout --niche country_blues_fe
+```
+
+Ordenar por views coloca no topo o vídeo de 4M de um canal de 3M de inscritos —
+uma gravadora, que não dá para replicar. O que interessa é o **multiplicador**
+(views ÷ inscritos): canal de 2.100 inscritos com 62k views em 5 dias fez 29x o
+próprio tamanho, e esse formato é copiável.
+
+Score 0–100 = multiplicador (45) + velocidade em views/dia (35) + volume
+absoluto (20), multiplicado por recência (cheia até 14d, zero aos 90d) e por
+porte do canal (1.0 pequeno → 0.15 gigante).
+
+O relatório também extrai as palavras recorrentes entre os títulos que
+estouraram — a embalagem a copiar — descartando o vocabulário genérico do nicho.
+
+Aceita o JSON de `vidiq_outliers`/`vidiq_trending_videos` e o `breakouts.json`
+gerado por `youtube_music_ops/scripts/run_daily_opportunity_radar.py`.
+
+---
+
+## Canais do nicho
+
+```bash
+python3 cli.py channels-ingest --niche country_blues_fe --file canais.json
+python3 cli.py channels --niche country_blues_fe
+```
+
+Aceita `vidiq_channel_search` e `vidiq_similar_channels`. O mesmo canal chega
+como nome solto (via breakout) e como `channelId` (via busca de canais) — a
+identidade é reconciliada por ID, depois handle, depois nome normalizado, para
+o mapa não virar uma lista de duplicatas.
+
+`vezes_visto` conta em quantas coletas o canal reapareceu: recorrer em várias
+queries indica canal estrutural do nicho, não acaso do ranking do dia. Até 100k
+inscritos o canal entra na lista de replicáveis.
+
 ---
 
 ## Uso

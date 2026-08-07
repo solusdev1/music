@@ -172,6 +172,74 @@ def normalize(item: dict[str, Any], niche: str, niche_type: str, priority: int, 
     }
 
 
+def aggregate_channels(rows: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+    """Agrega os vídeos por canal, dentro de cada nicho.
+
+    A busca devolve vídeos; o que interessa estrategicamente é o canal por trás
+    deles. Um canal que aparece em 5 das 6 queries do nicho é estrutural; um que
+    aparece uma vez pode ser acaso do ranking daquele dia.
+    """
+    por_nicho: dict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
+    for r in rows:
+        nome = (r.get('channel') or '').strip()
+        if not nome:
+            continue
+        c = por_nicho[r['niche']].setdefault(nome, {
+            'channel': nome, 'handle': r.get('channel_handle') or '',
+            'videos': 0, 'queries': set(), 'views': [], 'long_form': 0,
+        })
+        c['videos'] += 1
+        c['queries'].add(r.get('query'))
+        if isinstance(r.get('views'), int):
+            c['views'].append(r['views'])
+        if r.get('is_long_1h_plus'):
+            c['long_form'] += 1
+
+    saida: dict[str, list[dict[str, Any]]] = {}
+    for niche, canais in por_nicho.items():
+        lista = []
+        for c in canais.values():
+            views = sorted(c['views'])
+            lista.append({
+                'channel': c['channel'], 'handle': c['handle'],
+                'videos_no_radar': c['videos'], 'queries_distintas': len(c['queries']),
+                'views_mediana': int(statistics.median(views)) if views else None,
+                'views_max': max(views) if views else None,
+                'long_form': c['long_form'],
+            })
+        lista.sort(key=lambda c: (-c['queries_distintas'], -c['videos_no_radar']))
+        saida[niche] = lista
+    return saida
+
+
+def mark_breakouts(rows: list[dict[str, Any]], canais_por_nicho: dict[str, list[dict[str, Any]]]) -> None:
+    """Marca o que está COMEÇANDO a viralizar, não o que já é grande.
+
+    Esta fonte não expõe inscritos, então o multiplicador usa como base a
+    MEDIANA do próprio canal na amostra: um vídeo muito acima do que aquele
+    canal costuma fazer é o sinal de formato novo pegando. Só vale com 3+
+    vídeos do canal na amostra — com menos, a mediana é ruído e o campo fica
+    nulo em vez de inventar número.
+    """
+    medianas = {
+        (niche, c['channel']): c['views_mediana']
+        for niche, lista in canais_por_nicho.items() for c in lista
+        if c['videos_no_radar'] >= 3 and c['views_mediana']
+    }
+    for r in rows:
+        base = medianas.get((r['niche'], (r.get('channel') or '').strip()))
+        views, idade = r.get('views'), r.get('age_days_est')
+        mult = round(views / base, 2) if base and isinstance(views, int) and base > 0 else None
+        r['canal_mediana_views'] = base
+        r['multiplicador_vs_canal'] = mult
+        # "começando" = novo o bastante para o formato ainda estar aberto
+        r['is_breakout'] = bool(
+            idade is not None and idade <= 30
+            and ((mult is not None and mult >= 2.0)
+                 or (r.get('views_per_day_est') or 0) >= 5000)
+        )
+
+
 def dedupe(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     seen, out = set(), []
     for r in rows:
@@ -195,8 +263,22 @@ def write_report(config: dict[str, Any], rows: list[dict[str, Any]], raw: dict[s
     report_path = out_dir / 'daily_opportunity_summary.md'
     raw_path.write_text(json.dumps(raw, ensure_ascii=False, indent=2), encoding='utf-8')
     errors_path.write_text(json.dumps(errors, ensure_ascii=False, indent=2), encoding='utf-8')
-    fields = ['niche','niche_type','priority','query','score','video_id','url','title','channel','channel_handle','views','views_text','published','age_days_est','views_per_day_est','duration_seconds','duration_minutes','is_long_1h_plus']
+    fields = ['niche','niche_type','priority','query','score','video_id','url','title','channel','channel_handle','views','views_text','published','age_days_est','views_per_day_est','duration_seconds','duration_minutes','is_long_1h_plus','canal_mediana_views','multiplicador_vs_canal','is_breakout']
     rows_sorted = sorted(rows, key=lambda r: r.get('score') or 0, reverse=True)
+    canais = aggregate_channels(rows_sorted)
+    mark_breakouts(rows_sorted, canais)
+    channels_path = out_dir / 'channels_by_niche.json'
+    channels_path.write_text(json.dumps(canais, ensure_ascii=False, indent=2), encoding='utf-8')
+    # formato que o music-factory ingere direto (cli.py breakout-ingest)
+    breakout_path = out_dir / 'breakouts.json'
+    breakout_path.write_text(json.dumps({'videos': [
+        {'videoTitle': r.get('title'), 'viewCount': r.get('views'),
+         'channelTitle': r.get('channel'), 'ageDays': r.get('age_days_est'),
+         'videoId': r.get('video_id'), 'url': r.get('url'),
+         'duration': r.get('duration_seconds'), 'niche': r.get('niche'),
+         'multiplicadorVsCanal': r.get('multiplicador_vs_canal')}
+        for r in rows_sorted if r.get('is_breakout')
+    ]}, ensure_ascii=False, indent=2), encoding='utf-8')
     with csv_path.open('w', encoding='utf-8', newline='') as f:
         w = csv.DictWriter(f, fieldnames=fields, extrasaction='ignore'); w.writeheader(); w.writerows(rows_sorted)
     by = defaultdict(list)
@@ -214,17 +296,35 @@ def write_report(config: dict[str, Any], rows: list[dict[str, Any]], raw: dict[s
     for niche in config.get('priority_order', by.keys()):
         rs = by.get(niche, [])
         meta = config['niches'].get(niche, {})
-        words, channels = Counter(), Counter()
+        words = Counter()
         for r in rs:
-            channels[r.get('channel') or 'N/A'] += 1
             for w in re.findall(r'[\wÀ-ÿ]+', (r.get('title') or '').lower()):
                 if len(w) > 3 and w not in STOP: words[w] += 1
-        lines += ['', f'## {niche}', '', f'Tipo: {meta.get("type")}. Prioridade: {meta.get("priority")}.', meta.get('read',''), '', f'Canais recorrentes: {", ".join(c for c,_ in channels.most_common(6))}', f'Palavras recorrentes: {", ".join(w for w,_ in words.most_common(20))}', '', '| Score | Views/dia | Views | Duração | Título | Canal | URL |', '| ---: | ---: | ---: | ---: | --- | --- | --- |']
+        lines += ['', f'## {niche}', '', f'Tipo: {meta.get("type")}. Prioridade: {meta.get("priority")}.', meta.get('read',''), '', f'Palavras recorrentes: {", ".join(w for w,_ in words.most_common(20))}', '', '| Score | Views/dia | Views | Duração | Título | Canal | URL |', '| ---: | ---: | ---: | ---: | --- | --- | --- |']
         for r in rs[:10]:
             lines.append(f"| {r.get('score')} | {r.get('views_per_day_est') or 'N/A'} | {fmt_int(r.get('views'))} | {r.get('duration_minutes') or 'N/A'} min | {(r.get('title') or '').replace('|','/')[:110]} | {(r.get('channel') or '').replace('|','/')[:45]} | {r.get('url')} |")
-    lines += ['', '## Regras de decisão', '', '- Current niches primeiro; novas descobertas entram como testes, não distração.', '- Playlist/long-form continua sendo o produto principal.', '- Christian Sleep Ambient e Dark Academia passam a ser observados diariamente como novas oportunidades prioritárias.', '- Afro Deep House tem sinal forte, mas deve ficar separado de Noir Pulse para não confundir a identidade dark europeia/noir.', '- Latin Gospel Lofi fica em observação/teste, prioridade menor.', '', '## Arquivos', '', f'- CSV: {csv_path}', f'- Raw JSON: {raw_path}', f'- Erros/retries: {errors_path}', f'- Relatório: {report_path}', '']
+
+        brk = [r for r in rs if r.get('is_breakout')]
+        lines += ['', f'### Começando a viralizar — {niche}', '']
+        if not brk:
+            lines.append('Nada na janela de 30 dias bateu o corte (2x a mediana do canal ou 5k views/dia).')
+        else:
+            lines += ['Vídeos novos (≤30d) muito acima do normal do próprio canal — é o formato a replicar.', '', '| xCanal | Views/dia | Views | Idade | Título | Canal |', '| ---: | ---: | ---: | ---: | --- | --- |']
+            for r in brk[:8]:
+                mult = f"{r['multiplicador_vs_canal']}x" if r.get('multiplicador_vs_canal') else 'N/A'
+                lines.append(f"| {mult} | {r.get('views_per_day_est') or 'N/A'} | {fmt_int(r.get('views'))} | {r.get('age_days_est')}d | {(r.get('title') or '').replace('|','/')[:90]} | {(r.get('channel') or '').replace('|','/')[:35]} |")
+
+        cl = canais.get(niche, [])
+        lines += ['', f'### Canais do nicho — {niche}', '']
+        if not cl:
+            lines.append('Nenhum canal identificado nesta coleta.')
+        else:
+            lines += [f'{len(cl)} canal(is) distinto(s). Recorrer em várias queries indica canal estrutural, não acaso do ranking.', '', '| Queries | Vídeos | Mediana views | Máx views | 1h+ | Canal |', '| ---: | ---: | ---: | ---: | ---: | --- |']
+            for c in cl[:12]:
+                lines.append(f"| {c['queries_distintas']} | {c['videos_no_radar']} | {fmt_int(c['views_mediana'])} | {fmt_int(c['views_max'])} | {c['long_form']} | {c['channel'].replace('|','/')[:45]} |")
+    lines += ['', '## Regras de decisão', '', '- Current niches primeiro; novas descobertas entram como testes, não distração.', '- Playlist/long-form continua sendo o produto principal.', '- Christian Sleep Ambient e Dark Academia passam a ser observados diariamente como novas oportunidades prioritárias.', '- Afro Deep House tem sinal forte, mas deve ficar separado de Noir Pulse para não confundir a identidade dark europeia/noir.', '- Latin Gospel Lofi fica em observação/teste, prioridade menor.', '', '## Arquivos', '', f'- CSV: {csv_path}', f'- Raw JSON: {raw_path}', f'- Canais por nicho: {channels_path}', f'- Breakouts (ingerível pelo music-factory): {breakout_path}', f'- Erros/retries: {errors_path}', f'- Relatório: {report_path}', '', '## Replicar o que está começando', '', 'Os breakouts saem em `breakouts.json` no formato que o music-factory ingere:', '', '```bash', 'python3 music-factory/cli.py breakout-ingest --niche <nicho> --file breakouts.json', '```', '', 'Lá eles são repontuados por inscritos do canal (que esta fonte não expõe),', 'e o relatório mostra a embalagem recorrente a copiar.', '']
     report_path.write_text('\n'.join(lines), encoding='utf-8')
-    return {'report': str(report_path), 'csv': str(csv_path), 'raw': str(raw_path), 'errors': str(errors_path)}
+    return {'report': str(report_path), 'csv': str(csv_path), 'raw': str(raw_path), 'channels': str(channels_path), 'breakouts': str(breakout_path), 'errors': str(errors_path)}
 
 
 def main() -> int:

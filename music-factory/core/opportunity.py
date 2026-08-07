@@ -145,7 +145,9 @@ def format_report(conn, niche, theme_bank):
               "",
               "  A pauta diária segue funcionando por rodízio simples de temas.",
               "  Para coletar (consome créditos VIDIQ, rode SEMANALMENTE):",
-              f"      python3 cli.py collect-opportunity --niche {niche}"]
+              "      1. Peça ao agente para consultar o MCP VIDIQ (vidiq_keyword_research)",
+              f"      2. python3 cli.py vidiq-ingest --niche {niche} --file <json> --tipo keywords",
+              f"      3. python3 cli.py set-theme-score --niche {niche} --theme \"...\" --score N"]
         return "\n".join(L)
 
     ranked, scores = rank_themes(conn, niche, theme_bank)
@@ -216,7 +218,20 @@ def aprovar_ideia(conn, niche, ideia):
         raise LookupError(f"ideia não encontrada em {niche!r}: {ideia!r}")
 
 
-def radar_report(conn, niche, temas_atuais):
+def radar_report(conn, niche, temas_atuais, *, completo=True):
+    """Radar do nicho em quatro blocos.
+
+    Ordem intencional — do que é acionável hoje para o que é contexto:
+      1. saúde do banco de temas (se esgotar, a pauta diária quebra)
+      2. o que está começando a viralizar (formato a copiar)
+      3. canais replicáveis (quem já provou o formato no tamanho certo)
+      4. ideias soltas aguardando aprovação
+
+    `completo=False` corta os blocos 2 e 3 — útil quando o chamador só quer
+    a fila de ideias sem tocar nas tabelas de canais.
+    """
+    from . import channels  # import tardio evita ciclo
+
     init_ideias(conn)
     novas = listar_ideias(conn, niche)
     L = [f"🛰️  RADAR — {niche}", "",
@@ -225,7 +240,12 @@ def radar_report(conn, niche, temas_atuais):
     minimo = 30
     if len(temas_atuais) < minimo:
         L.append(f"  ⚠️  abaixo de {minimo}: o rodízio esgota e passa a reaproveitar tema antigo")
-    L.append("")
+
+    if completo:
+        L += ["", channels.format_breakout_report(conn, niche),
+              "", channels.format_channels_report(conn, niche)]
+
+    L += ["", f"💡 IDEIAS PENDENTES — {niche}", ""]
     if not novas:
         L += ["  Nenhuma ideia nova pendente.",
               f"  Registre com: cli.py radar-add --niche {niche} --ideia \"...\""]

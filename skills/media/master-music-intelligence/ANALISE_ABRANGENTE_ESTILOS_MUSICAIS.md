@@ -1,5 +1,10 @@
 # 🎵 ANÁLISE ABRANGENTE: ESTILOS MUSICAIS EMERGENTES NO YOUTUBE
 
+> ⚠️ **Nota de honestidade (2026-08)**: os números de crescimento/saturação
+> deste documento são dados sintéticos de exemplo (2024), não medições —
+> ver nota em `README.md`. Para desempenho real dos canais operados hoje,
+> use `music-factory/data/*.db`.
+
 ## Sem Limite de Gênero - Todas as Categorias em Crescimento Acelerado
 
 **Período**: Últimos 3 meses (Maio-Julho 2024)  

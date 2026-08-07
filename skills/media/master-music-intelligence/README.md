@@ -2,6 +2,19 @@
 
 Este diretório contém análises consolidadas sobre tendências emergentes de estilos musicais no YouTube, com foco em oportunidades para novos criadores de conteúdo.
 
+> ⚠️ **Nota de honestidade (2026-08):** os números de crescimento/engajamento
+> abaixo (Trap Gospel 180%, Sertanejo Trap Gospel 162%, Country Blues Gospel
+> 45%...) são **dados sintéticos de exemplo** (`CLAUDE_TRENDS` no código),
+> não medições reais — ver nota no topo de `hermes_master_music_intelligence.py`.
+> A recomendação "SERTANEJO TRAP GOSPEL é o maior potencial" abaixo é datada
+> de julho/2024 e **contradiz o resultado real medido** deste projeto desde
+> então: Country Blues e Fé (a versão real do "Country Blues Gospel" aqui
+> descrito como "saturação alta") é o canal com melhor desempenho medido
+> entre os operados (ver `../../../ANALISE-2026-07-30.md` e
+> `music-factory/data/*.db`), e nenhum canal Sertanejo Trap Gospel jamais
+> foi lançado. Trate este documento como um artefato histórico do desenho
+> original da skill, não como orientação de estratégia atual.
+
 ## 📋 Documentos
 
 ### [SUMARIO_EXECUTIVO.md](./SUMARIO_EXECUTIVO.md)

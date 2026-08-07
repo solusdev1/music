@@ -1,5 +1,10 @@
 # 🎵 HERMES MASTER MUSIC INTELLIGENCE SKILL (v1.0)
 
+> ⚠️ **Honesty note (2026-08)**: this guide's genre/trend figures are
+> synthetic example data, not measurements — see `README.md`'s honesty
+> note and the header comment in `hermes_master_music_intelligence.py`.
+> For real channel performance use `music-factory/data/*.db`.
+
 ## Consolidated Integration of:
 - ✅ YouTube Music Production (Suno, lyrics, loops, metadata)
 - ✅ Country Blues Channel Analysis (Daily radar, metrics, monetization)
