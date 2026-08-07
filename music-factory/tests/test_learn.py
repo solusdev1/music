@@ -93,3 +93,26 @@ def test_sync_vph_matches_by_title_case_insensitive(conn):
     assert casados == 1
     row = conn.execute("SELECT vph FROM tracks WHERE slug='n1-a'").fetchone()
     assert row["vph"] > 0
+
+
+def test_extract_hook_ignora_emoji_no_inicio():
+    """Metade dos títulos do projeto começa com 🙏 — o gancho é o mesmo.
+
+    Cortar no primeiro separador devolvia string vazia nesse caso, e o
+    fallback entregava o título inteiro: os dois formatos nunca casavam e
+    hook_collisions ficava cego para a repetição.
+    """
+    a = learn.extract_hook("DEUS CONHECE SUA DOR 🙏 1H55 Os Melhores Louvores")
+    b = learn.extract_hook("🙏 DEUS CONHECE SUA DOR | Os Melhores Louvores")
+    assert a == b == "DEUS CONHECE SUA DOR"
+
+
+def test_hook_collisions_enxerga_repeticao_com_emoji_no_inicio(conn):
+    learn.add_published(conn, "n1", "DEUS CONHECE SUA DOR 🙏 1H55 Louvores",
+                        "2026-07-15", 8000, duration=6889, formato="long")
+    learn.add_published(conn, "n1", "🙏 DEUS CONHECE SUA DOR | Louvores (1 Hora)",
+                        "2026-07-20", 186, duration=3644, formato="long")
+    colisoes = learn.hook_collisions(conn, "n1", hoje=date(2026, 7, 25), janela_dias=30)
+    assert len(colisoes) == 1
+    assert colisoes[0]["hook"] == "DEUS CONHECE SUA DOR"
+    assert colisoes[0]["retencao_pct"] < 50   # o segundo ficou com uma fração

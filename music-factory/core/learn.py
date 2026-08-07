@@ -67,10 +67,16 @@ def parse_duration(txt):
 def extract_hook(title):
     """Gancho = trecho emocional antes do separador.
 
-    Os títulos do projeto seguem '[GANCHO] 🙏 | [formato/benefício]'.
-    Corta no primeiro '|' ou emoji e normaliza para comparação.
+    Os títulos do projeto seguem '[GANCHO] 🙏 | [formato/benefício]', mas
+    metade deles começa com o emoji: '🙏 GANCHO | ...'. Cortar no primeiro
+    separador nesse caso devolvia string vazia e o fallback entregava o título
+    inteiro — então '🙏 DEUS CONHECE SUA DOR | ...' nunca casava com
+    'DEUS CONHECE SUA DOR 🙏 ...' e `hook_collisions` ficava cego justamente
+    para a repetição que derruba a entrega. Descartar os pedaços vazios da
+    borda resolve.
     """
-    t = re.split(r"[|🙏😴🌙✨🎵]", title)[0]
+    partes = [p for p in re.split(r"[|🙏😴🌙✨🎵]", title) if p.strip()]
+    t = partes[0] if partes else ""
     t = re.sub(r"\s+", " ", t).strip(" -–—:").upper()
     return t or title.strip().upper()
 
