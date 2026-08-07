@@ -75,11 +75,18 @@ def ingest_keywords(conn, niche, payload, *, pais=None):
 
 
 def ingest_outliers(conn, niche, payload, *, min_breakout=5.0):
-    """Transforma vídeos em alta em ideias de música.
+    """Transforma vídeos em alta em ideias de música + candidatos a breakout.
 
     Guarda o título como ideia bruta — quem decide se vira tema é o operador,
     via `radar-approve`. O sistema não inventa tema sozinho.
+
+    Cada vídeo também vai para `channels.save_breakout`, que o repontua por
+    replicabilidade (views ÷ inscritos, recência, porte do canal). O
+    `breakoutScore` que vem do VIDIQ é o critério de ENTRADA; o score de
+    replicabilidade é o que ordena o que copiar.
     """
+    from . import channels  # import tardio evita ciclo
+
     ideias = 0
     for v in payload.get("videos") or []:
         if (v.get("breakoutScore") or 0) < min_breakout:
@@ -91,6 +98,17 @@ def ingest_outliers(conn, niche, payload, *, min_breakout=5.0):
             conn, niche, titulo,
             origem=f"outlier·{v.get('channelTitle','?')}·{v.get('subscriberCount',0)}subs",
             score=v.get("breakoutScore"),
+        )
+        channels.save_breakout(
+            conn, niche, titulo,
+            views=v.get("viewCount") or v.get("views"),
+            canal=v.get("channelTitle"),
+            canal_subs=v.get("subscriberCount"),
+            idade_dias=v.get("ageDays") or v.get("daysSincePublished"),
+            video_id=v.get("videoId") or v.get("id"),
+            url=v.get("url") or v.get("videoUrl"),
+            duracao_sec=v.get("duration") or v.get("durationSeconds"),
+            origem="vidiq-outliers",
         )
         ideias += 1
     return ideias
