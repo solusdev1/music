@@ -22,19 +22,56 @@ apontando para nome errado.
 
 ## 1. Onde está o esforço e onde está o resultado
 
-| Canal | Inscritos | Views/vídeo | Vídeos 30d | +Subs 30d | Subs por vídeo |
-|---|---:|---:|---:|---:|---:|
-| **Country Blues e Fé** | — | mediana **528**, melhor **8.629** | 20 | — | — |
-| Estrada da Fé | 7.720 | 512 | 30 | +40 | **1,3** |
-| Faith Road (EN) | 820 | 585 | −1 (7 apagados) | **−7** | — |
+Os 6 canais, medidos no mesmo dia (07/08/2026):
 
-**Estrada da Fé produziu 30 vídeos em 30 dias para ganhar 40 inscritos.** São
-191 views por vídeo. Faith Road perdeu inscritos e teve 7 vídeos apagados.
+| Canal | Idade | Inscritos | Views | Vídeos | Views/vídeo | **Subs/dia** |
+|---|---:|---:|---:|---:|---:|---:|
+| **Country Blues e Fé** | 24 d | 284 | 23.795 | 23 | **1.035** | **11,83** |
+| Faith Road (EN) | 120 d | 820 | 42.110 | 72 | 585 | 6,83 |
+| Estrada da Fé | 7,4 anos | 7.720 | 52.238 | 102 | 512 | 2,86 |
+| Noir Pulse | 7 d | 2 | 328 | 6 | 55 | 0,29 |
+| **Goku's Jazz Lounge** | 102 d | **4** | **193** | 22 | **9** | **0,04** |
+| Southern Grace Roads | 8 d | 0 | 22 | 4 | 6 | 0,00 |
 
-O Country Blues e Fé é **o único canal que já produziu um vídeo de 8.629
-views**. Os outros dois estão travados num teto de ~500 views/vídeo.
+**O Country Blues e Fé é o melhor canal do portfólio por larga margem.** Em 24
+dias fez 284 inscritos e 23.795 views — mais views que o Estrada da Fé acumulou
+em boa parte dos seus 7 anos, com um quinto dos vídeos. São 1.035 views por
+vídeo contra 512 do segundo colocado.
 
-> ⚠️ **Ressalva de dado:** nos dias 01–03/08 os dois canais aparecem com views
+**O Goku's Jazz Lounge é o oposto:** 102 dias de vida, 22 vídeos publicados,
+**193 views no total e 4 inscritos**. Nove views por vídeo. É produção
+integralmente perdida, e o radar explica: jazz foi o nicho com menor teto
+medido (só 2 de 12 vídeos passaram de 60 pontos) e maior exigência de volume
+(mediana de 163 min por vídeo, 24 vídeos/mês entre os que crescem).
+
+**O Noir Pulse corrobora o radar.** Com 7 dias de vida já faz 55 views/vídeo —
+**6x o que o Goku's Jazz Lounge faz em 102 dias.** É consistente com o achado de
+que deep house tem multiplicador mediano de 42,6x contra 4,8x do gospel PT.
+
+### A correção que a idade do canal impõe
+
+Eu apresentei antes a queda do Country Blues e Fé sem saber que o canal tinha
+24 dias. Isso muda a leitura: **o canal não está morrendo, está desacelerando.**
+Os inscritos seguem subindo (3 → 284) e nunca caíram.
+
+O que caiu, e caiu forte, é a velocidade diária de views:
+
+| Data | Views/dia |
+|---|---:|
+| 31/07 | **1.986** |
+| 03/08 | 810 |
+| 04/08 | 415 |
+| 05/08 | 394 |
+| 06/08 | 467 |
+
+**Queda de ~77% em 6 dias.** A aquisição de inscritos seguiu o mesmo caminho: 27
+por dia em 30/07, 2 a 9 por dia em agosto.
+
+O diagnóstico de canibalização continua de pé — ele explica exatamente isto:
+por que um canal que estava acelerando parou de acelerar. Mas a moldura correta
+é "lançamento forte perdendo tração", não "canal em colapso".
+
+> ⚠️ **Ressalva de dado:** nos dias 01–03/08 vários canais aparecem com views
 > congeladas em valores idênticos. Dois canais independentes com o mesmo
 > comportamento na mesma janela é mais compatível com o VIDIQ não ter
 > atualizado do que com entrega zero real. Não tratar como queda.
@@ -45,16 +82,20 @@ views**. Os outros dois estão travados num teto de ~500 views/vídeo.
 
 ### ★ 1. Concentrar produção no Country Blues e Fé
 
-É a maior alavanca disponível e não custa nada além de decisão. A mesma
-produção que rende 1,3 inscrito/vídeo no Estrada da Fé aplicada num canal que
-já demonstrou capacidade de 8.629 views muda o patamar.
+É a maior alavanca disponível e não custa nada além de decisão. O canal faz
+**11,83 inscritos/dia**; o Estrada da Fé faz 2,86 e o Goku's Jazz Lounge faz
+0,04. A mesma produção redirecionada para o canal que já demonstrou capacidade
+de 8.629 views num único vídeo muda o patamar.
 
 O YouTube julga o canal inteiro, não vídeos isolados (a própria skill diz isso
 na §5). Seis canais rasos competem entre si por atenção de produção e nenhum
 acumula sinal suficiente.
 
-**Ação:** pausar Estrada da Fé e Faith Road por 60 dias. Redirecionar a
-cadência para o Country Blues e Fé.
+**Ação:** encerrar o Goku's Jazz Lounge (102 dias, 193 views, 4 inscritos — o
+nicho de jazz é o de menor teto e maior exigência de volume no radar). Pausar
+Estrada da Fé e Faith Road por 60 dias. Manter o Noir Pulse com cadência
+mínima, porque em 7 dias já rende 6x o Goku's e confirma o achado do radar.
+Todo o resto da cadência vai para o Country Blues e Fé.
 
 ---
 
