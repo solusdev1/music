@@ -17,7 +17,7 @@ faz duas músicas soarem iguais passa a ser deliberadamente diferente.
 from datetime import date
 from pathlib import Path
 
-from . import catalog, quality
+from . import catalog, lyriccraft, quality, style
 
 
 def _rodizio(lista, i, fallback=""):
@@ -62,9 +62,10 @@ def _style_da_faixa(cfg, variacao):
     variação ao style_prompt completo criava contradição — a base afirmava
     "slide guitar, coral final" enquanto a variação pedia "quase acústico,
     sem coral", e o Suno responde mal a prompt que se contradiz.
+
+    A ordem dos elementos (voz primeiro, âncoras no fim) fica em `style`.
     """
-    base = cfg.get("style_base") or cfg["style_prompt"]
-    return f"{base}, {variacao}" if variacao else base
+    return style.build(cfg, variacao)
 
 
 def registrar_angulos(conn, niche, faixas):
@@ -143,6 +144,7 @@ Gere **{len(faixas)} {unidade}s** para Suno. Canal "{cfg['canal']}" · {cfg.get(
 
 ## Regras
 {regras}{regra_extra}
+{lyriccraft.bloco(cfg)}
 {_bloco_cultura(cfg)}
 {_bloco_evitar(evitar)}
 
@@ -175,7 +177,7 @@ def escrever_pasta(cfg, tema, faixas, out_dir, *, evitar=None, irmaos=()):
         pasta = out / "musicas" / f"{f['n']:02d}-{catalog.slugify(f['papel'])[:28]}"
         pasta.mkdir(parents=True, exist_ok=True)
         pasta.joinpath("01-style-prompt-suno.txt").write_text(f["style_prompt"] + "\n", encoding="utf-8")
-        pasta.joinpath("02-exclude-styles-suno.txt").write_text(cfg["exclude_styles"] + "\n", encoding="utf-8")
+        pasta.joinpath("02-exclude-styles-suno.txt").write_text(style.exclude(cfg) + "\n", encoding="utf-8")
         pasta.joinpath("03-lyrics-suno.txt").write_text(
             f"(cole aqui a letra da FAIXA {f['n']})\n", encoding="utf-8")
         pasta.joinpath("00-BRIEFING.txt").write_text(

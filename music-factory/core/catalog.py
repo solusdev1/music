@@ -187,6 +187,39 @@ def pick_hook(conn, niche, hook_bank, *, cooldown_days=30):
     return sorted(hook_bank, key=lambda h: used.get(h, ""))
 
 
+def _tokens(hook):
+    return {t for t in re.split(r"[^a-zA-Z0-9]+", slugify(hook)) if t}
+
+
+def filter_retired(hook_bank, aposentados, *, limiar=0.6):
+    """Tira do banco os ganchos parecidos demais com um gancho aposentado.
+
+    Não basta comparar texto exato. O gancho que canibalizou o Country Blues
+    e Fé foi «DEUS CONHECE SUA DOR», publicado 8 vezes; o banco do config tem
+    «DEUS VIU SUA DOR» — títulos diferentes que disputam exatamente a mesma
+    busca. Filtrar só o literal deixaria o problema de pé.
+
+    A semelhança é a fração de palavras em comum sobre o menor dos dois
+    ganchos: 3 de 4 palavras = 0.75, acima do limiar, some do banco.
+
+    Devolve (liberados, removidos). Se sobrar nada, devolve o banco inteiro —
+    ficar sem título é pior que repetir, e quem chama avisa.
+    """
+    if not aposentados:
+        return list(hook_bank), []
+    velhos = [_tokens(a) for a in aposentados if a]
+
+    livres, removidos = [], []
+    for h in hook_bank:
+        th = _tokens(h)
+        parecido = any(
+            th and tv and len(th & tv) / min(len(th), len(tv)) >= limiar
+            for tv in velhos
+        )
+        (removidos if parecido else livres).append(h)
+    return (livres or list(hook_bank)), removidos
+
+
 def register_hook(conn, niche, hook):
     conn.execute("INSERT INTO hook_usage (niche, hook, used_at) VALUES (?,?,?)",
                  (niche, hook, now()))

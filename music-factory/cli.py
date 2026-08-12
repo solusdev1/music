@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from core import (brief, catalog, channels, db, learn, opportunity, playlist,  # noqa: E402
-                  quality, vidiq)
+                  quality, seo, style, vidiq, viralscore)
 
 BASE = Path(__file__).resolve().parent
 NICHES_DIR = BASE / "niches"
@@ -216,6 +216,68 @@ def cmd_vidiq_ingest(args, conn):
         print(f"✅ {n} ideia(s) de outlier gravada(s) em {args.niche}")
 
 
+def cmd_titulo(args, conn):
+    """Titular pelo pipeline — é o que faz o cooldown de gancho existir.
+
+    O `DIAGNOSTICO-ENTREGA-2026-08-07.md` mostrou que os títulos estavam sendo
+    escritos fora do sistema: `hook_usage` ficava vazia, o cooldown não tinha
+    contra o que comparar e o mesmo gancho saiu em 8 de 20 vídeos. Este comando
+    existe para titular um vídeo avulso sem precisar rodar a pauta inteira.
+    """
+    cfg = brief.load_niche(args.niches_dir, args.niche)
+    _, removidos = catalog.filter_retired(cfg["ganchos"], cfg.get("ganchos_aposentados", []))
+    titulos = brief.make_titles(conn, cfg, n=args.n, total_sec=args.total_sec)
+    if not titulos:
+        raise LookupError(f"nenhum gancho disponível em {args.niche}")
+
+    print(f"🏷️  {cfg['nome_exibicao']}\n")
+    for i, t in enumerate(titulos, 1):
+        print(f"  {i}. {t['titulo']}")
+    if removidos:
+        print(f"\n  ⚠️  fora do banco por aposentadoria: {', '.join(removidos)}")
+
+    if args.registrar:
+        catalog.register_hook(conn, args.niche, titulos[0]["gancho"])
+        print(f"\n✅ gancho «{titulos[0]['gancho']}» registrado — "
+              f"em descanso por {cfg.get('cooldown_gancho_dias', 30)} dias")
+    else:
+        print("\n   (nada registrado. Use --registrar ao publicar de fato)")
+
+
+def cmd_score(args, conn):
+    cfg = brief.load_niche(args.niches_dir, args.niche)
+    letra = Path(args.lyrics).read_text(encoding="utf-8")
+    print(viralscore.format_report(conn, cfg, letra, titulo=args.title))
+
+
+def cmd_seo(args, conn):
+    cfg = brief.load_niche(args.niches_dir, args.niche)
+    print(f"🔎 SEO — {cfg['nome_exibicao']} — tema «{args.tema}»\n")
+    print("HASHTAGS")
+    print("  " + " ".join(seo.hashtags(cfg, args.tema)))
+    print("\nLINHA DE KEYWORDS (primeiros 500 chars da descrição)")
+    print("  " + seo.linha_keywords(cfg, args.tema))
+    print("\nCHECKLIST DE PUBLICAÇÃO")
+    print(seo.checklist(cfg))
+
+
+def cmd_style(args, conn):
+    cfg = brief.load_niche(args.niches_dir, args.niche)
+    print(f"🎚️  STYLE PROMPT — {cfg['nome_exibicao']}\n")
+    print("STYLE (base do canal)")
+    print("  " + style.build(cfg))
+    print("\nEXCLUDE (com as guardas anti-instrumental)")
+    print("  " + style.exclude(cfg))
+    variacoes = cfg.get("variacoes_estilo", [])
+    if variacoes:
+        print("\nPOR VARIAÇÃO DE FAIXA")
+        for v in variacoes:
+            print(f"  · {style.build(cfg, v)}")
+    avisos = style.diagnostico(cfg)
+    print("\nDIAGNÓSTICO")
+    print("\n".join(f"  ⚠️  {a}" for a in avisos) if avisos else "  ✅ nenhum problema detectado")
+
+
 def cmd_status(args, conn):
     print("📊 MUSIC FACTORY\n")
     for n in conn.execute("SELECT niche, COUNT(*) c FROM tracks GROUP BY niche"):
@@ -369,6 +431,29 @@ def main(argv=None):
     s.add_argument("--tipo", choices=["keywords", "outliers"], required=True)
     s.add_argument("--pais")
     s.set_defaults(func=cmd_vidiq_ingest)
+
+    s = sub.add_parser("titulo", help="título pelo pipeline (alimenta o cooldown de gancho)")
+    s.add_argument("--niche", required=True)
+    s.add_argument("--n", type=int, default=3, help="quantas variações para A/B")
+    s.add_argument("--total-sec", type=int, help="duração real, para o rótulo do título")
+    s.add_argument("--registrar", action="store_true",
+                   help="grava o gancho da 1ª opção como usado hoje")
+    s.set_defaults(func=cmd_titulo)
+
+    s = sub.add_parser("score", help="score 0–100 de uma letra antes de gerar no Suno")
+    s.add_argument("--niche", required=True)
+    s.add_argument("--lyrics", required=True, help="arquivo da letra")
+    s.add_argument("--title", help="título pretendido (vale 20 pontos)")
+    s.set_defaults(func=cmd_score)
+
+    s = sub.add_parser("seo", help="hashtags, keywords e checklist do vídeo")
+    s.add_argument("--niche", required=True)
+    s.add_argument("--tema", required=True)
+    s.set_defaults(func=cmd_seo)
+
+    s = sub.add_parser("style", help="style prompt montado e diagnóstico do nicho")
+    s.add_argument("--niche", required=True)
+    s.set_defaults(func=cmd_style)
 
     s = sub.add_parser("status", help="visão geral")
     s.set_defaults(func=cmd_status)

@@ -10,7 +10,8 @@
   "cooldown_gancho_dias": 30,
   "duracao_media_faixa_sec": 270,
   "style_prompt": "Country blues gospel BR, slide guitar, órgão suave, barítono rouco, coral final, warm analog",
-  "exclude_styles": "EDM, trap, funk, rap, pop worship brilhante, autotune pesado, metal, bateria eletrônica, voz infantil",
+  "voz": "Male deep baritone vocals, weathered and warm, emotional lead delivery",
+  "exclude_styles": "EDM, trap, funk, rap, pop worship brilhante, autotune pesado, metal, bateria eletrônica, voz infantil, instrumental only, backing vocals only, no lead vocals",
   "formula_titulo": "{GANCHO} 🙏 | {DURACAO} de Country Blues Gospel Para {BENEFICIO}",
   "formula_alt": [
     "{GANCHO} 🙏 | Playlist Country Gospel Blues Para {BENEFICIO}",
@@ -183,5 +184,8 @@
     "banda completa, coral feminino de apoio no refrão final, órgão presente",
     "muito lento e íntimo, voz sussurrada, cordas suaves ao fundo, sem percussão"
   ],
-  "style_base": "Country blues gospel brasileiro, português do interior, gravação analógica quente, sem brilho digital"
+  "style_base": "Country blues gospel brasileiro, português do interior, gravação analógica quente, sem brilho digital",
+  "ganchos_aposentados": [
+    "DEUS CONHECE SUA DOR"
+  ]
 }

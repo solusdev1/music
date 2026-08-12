@@ -7,10 +7,11 @@ módulo entrega o prompt pronto para isso.
 """
 
 import json
+import re
 from datetime import date
 from pathlib import Path
 
-from . import catalog, learn, opportunity, playlist, quality, songbrief
+from . import catalog, learn, opportunity, playlist, quality, seo, songbrief, style
 
 
 def load_niche(niches_dir, niche):
@@ -57,23 +58,43 @@ def _rotulo_duracao(total_sec, idioma="pt"):
 
 
 def make_titles(conn, cfg, n=3, *, total_sec=None):
-    """Gera títulos evitando ganchos usados recentemente."""
+    """Gera títulos evitando ganchos usados recentemente e os aposentados.
+
+    Duas proteções distintas: o cooldown olha o histórico de uso; a lista
+    `ganchos_aposentados` do config é decisão do operador sobre um gancho
+    queimado — e vale também para os ganchos do banco que se parecem com ele.
+    """
+    banco, _ = catalog.filter_retired(cfg["ganchos"], cfg.get("ganchos_aposentados", []))
     ganchos = catalog.pick_hook(
-        conn, cfg["niche"], cfg["ganchos"], cooldown_days=cfg.get("cooldown_gancho_dias", 30)
+        conn, cfg["niche"], banco, cooldown_days=cfg.get("cooldown_gancho_dias", 30)
     )
     formulas = [cfg["formula_titulo"]] + list(cfg.get("formula_alt", []))
     beneficios = cfg["beneficios"]
+    rotulo = _rotulo_duracao(total_sec, cfg.get("idioma", "pt"))
     titulos = []
     for i in range(min(n, len(ganchos))):
         formula = formulas[i % len(formulas)]
         titulos.append({
             "gancho": ganchos[i],
-            "titulo": (formula.replace("{GANCHO}", ganchos[i])
-                              .replace("{BENEFICIO}", beneficios[i % len(beneficios)])
-                              .replace("{DURACAO}", _rotulo_duracao(
-                                  total_sec, cfg.get("idioma", "pt")))),
+            "titulo": _aplicar_formula(formula, ganchos[i],
+                                       beneficios[i % len(beneficios)], rotulo),
         })
     return titulos
+
+
+def _aplicar_formula(formula, gancho, beneficio, rotulo):
+    """Preenche a fórmula sem deixar cicatriz quando não há duração real.
+
+    Sem áudio ainda não existe duração honesta a anunciar. Substituir por
+    string vazia deixava `"{DURACAO} de Country Gospel"` virar
+    `"| de Country Gospel"` — o conector órfão sai junto com o slot.
+    """
+    if not rotulo:
+        formula = re.sub(r"\{DURACAO\}\s*(?:de|of|d[eo]s)?\s*", "", formula)
+    titulo = (formula.replace("{GANCHO}", gancho)
+                     .replace("{BENEFICIO}", beneficio)
+                     .replace("{DURACAO}", rotulo))
+    return re.sub(r"\s{2,}", " ", titulo).strip(" |")
 
 
 def _bloco_qualidade(evitar):
@@ -258,11 +279,18 @@ def descricao(cfg, tema, chapters, titulo):
     O template vem do config quando existe; senão usa o padrão do idioma.
     Antes isto era português fixo, o que gerava descrição em PT num canal
     em inglês.
+
+    Duas correções de SEO por vídeo: a linha de keywords entra logo abaixo
+    do título (o YouTube indexa os primeiros ~500 caracteres) e as hashtags
+    passam a variar com o tema, em vez das mesmas 11 em todo vídeo.
     """
     tpl = cfg.get("descricao_template") or DESCRICAO_PADRAO.get(
         str(cfg.get("idioma", "pt"))[:2].lower(), DESCRICAO_PADRAO["pt"])
-    return tpl.format(titulo=titulo, tema=tema, chapters=chapters,
-                      canal=cfg["canal"], hashtags=" ".join(cfg["hashtags"]))
+    keywords = seo.linha_keywords(cfg, tema)
+    cabecalho = f"{titulo}\n{keywords}" if keywords else titulo
+    return tpl.format(titulo=cabecalho, tema=tema, chapters=chapters,
+                      canal=cfg["canal"],
+                      hashtags=" ".join(seo.hashtags(cfg, tema)))
 
 
 def generate(conn, cfg, out_root, *, today=None, n_songs=None, niches_dir=None,
@@ -308,7 +336,7 @@ def generate(conn, cfg, out_root, *, today=None, n_songs=None, niches_dir=None,
             conn, niche, f"[{today} #{i}] a definir",
             slug=f"{niche}-{today}-{i}", theme=tema,
             mood="calm" if i == n_songs else "retain",
-            style_prompt=cfg["style_prompt"], exclude_styles=cfg["exclude_styles"],
+            style_prompt=style.build(cfg), exclude_styles=style.exclude(cfg),
             duration_sec=cfg.get("duracao_media_faixa_sec", 270), status="draft",
         )
         novas_ids.append(row["id"])
@@ -326,6 +354,10 @@ def generate(conn, cfg, out_root, *, today=None, n_songs=None, niches_dir=None,
 
     out = Path(out_root) / today / niche
     out.mkdir(parents=True, exist_ok=True)
+
+    # O style prompt é o que decide se a faixa sai cantada ou instrumental —
+    # avisar aqui é mais barato que descobrir depois de 5 gerações no Suno.
+    avisos.extend(style.diagnostico(cfg))
 
     evitar = quality.avoid_list(conn, niche, protegidas=cfg.get("palavras_protegidas", ()),
                                idioma=cfg.get("idioma"))
@@ -349,10 +381,12 @@ def generate(conn, cfg, out_root, *, today=None, n_songs=None, niches_dir=None,
         p.joinpath("tracklist-chapters.txt").write_text(chapters, encoding="utf-8")
         p.joinpath("descricao.txt").write_text(
             descricao(cfg, tema, chapters, titulos[0]["titulo"]), encoding="utf-8")
-        p.joinpath("hashtags.txt").write_text(" ".join(cfg["hashtags"]), encoding="utf-8")
+        p.joinpath("hashtags.txt").write_text(
+            " ".join(seo.hashtags(cfg, tema)), encoding="utf-8")
         p.joinpath("tags-youtube.txt").write_text(", ".join(cfg["tags_youtube"]), encoding="utf-8")
         p.joinpath("comentario-fixado.txt").write_text(cfg["comentario_fixado"], encoding="utf-8")
         p.joinpath("prompt-thumbnail.txt").write_text(cfg["prompt_thumbnail"], encoding="utf-8")
+        p.joinpath("checklist-publicacao.txt").write_text(seo.checklist(cfg), encoding="utf-8")
 
     resumo = f"""# PAUTA DO DIA — {cfg['nome_exibicao']} — {today}
 

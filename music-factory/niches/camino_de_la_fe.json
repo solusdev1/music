@@ -56,7 +56,8 @@
   "idioma": "es-419",
   "pais": "MX",
   "style_prompt": "Blues gospel campirano, guitarra slide, órgano cálido, barítono rasgado, coro final, analógico cálido",
-  "exclude_styles": "EDM, trap, reggaetón, rap, pop worship brillante, autotune pesado, metal, batería electrónica, voces infantiles",
+  "voz": "Male deep baritone vocals, grainy and warm, intimate emotional delivery",
+  "exclude_styles": "EDM, trap, reggaetón, rap, pop worship brillante, autotune pesado, metal, batería electrónica, voces infantiles, instrumental only, backing vocals only, no lead vocals",
   "formula_titulo": "{GANCHO} 🙏 | {DURACAO} de Blues Gospel Para {BENEFICIO}",
   "formula_alt": [
     "{GANCHO} 🙏 | Alabanzas de Blues Gospel Para {BENEFICIO}",
