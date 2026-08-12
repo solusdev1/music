@@ -6,7 +6,7 @@ sleep channel). Three subsystems live here, at different levels of maturity:
 
 | Subsystem | Status | What it does |
 |---|---|---|
-| **[`music-factory/`](music-factory/README.md)** | ✅ Production, tested | The real engine: catalog, three independent anti-repetition cooldowns (track/theme/hook), playlist assembly, quality (vocabulary/rhyme saturation) checks, VIDIQ-cache-driven theme opportunity, and real channel-performance analytics (views/day, hook-collision detection, health/abandon verdicts). Runs daily via a systemd timer. **56 pytest tests**, CI on push. |
+| **[`music-factory/`](music-factory/README.md)** | ✅ Production, tested | The real engine: catalog, three independent anti-repetition cooldowns (track/theme/hook), playlist assembly, quality (vocabulary/rhyme saturation) checks, VIDIQ-cache-driven theme opportunity, vocal-forward Suno style prompts, pre-production song scoring, per-video SEO, and real channel-performance analytics (views/day, hook-collision detection, health/abandon verdicts). Runs daily via a systemd timer. **123 pytest tests**, CI on push. |
 | **[`youtube_music_ops/`](youtube_music_ops/README.md)** | ✅ Real, standalone | External-API opportunity radar (TranscriptAPI, with an automatic yt-dlp fallback) exploring prospective niches. **Not wired into `music-factory`** — see its README for the gap. |
 | **[`skills/media/master-music-intelligence/`](skills/media/master-music-intelligence/README.md)** | ⚠️ Mixed | Real ingested radar data alongside a **synthetic, invented "8 emerging genres" trend table** (Phonk/Hyperpop/Amapiano/etc.) that predates `music-factory`, doesn't correspond to any channel actually operated, and was never kept in sync with the real, measured results. Now clearly labeled in-code and in its own README as illustrative, not market intelligence — read the caveats there before trusting anything it prints. |
 
@@ -37,6 +37,9 @@ decision, `"shorts_policy": "nenhum"` in every niche config).
   don't share data; bridging them is a manual copy-paste today.
 - See `ANALISE-2026-08-06-HERMES.md` for the current full analysis
   (code audit + market research + prioritized recommendations).
+- `MELHORIAS-CONTEUDO-2026-08-12.md` records what the operator's content
+  skills contributed to `music-factory`, what was deliberately left out, and
+  the one correction still pending outside this repo.
 
 ---
 

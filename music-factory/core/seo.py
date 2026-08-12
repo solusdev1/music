@@ -1,0 +1,158 @@
+"""Pacote de SEO por vídeo — o que muda de um vídeo para o outro.
+
+`brief.py` montava as hashtags com `" ".join(cfg["hashtags"])`: as mesmas 11
+hashtags em todos os vídeos do canal. Somado a títulos que compartilhavam o
+mesmo gancho, isso entrega ao YouTube um sinal de duplicata — é um dos fatores
+listados no `DIAGNOSTICO-ENTREGA-2026-08-07.md` para a queda de entrega do
+Country Blues e Fé.
+
+Aqui cada vídeo recebe:
+  · as hashtags de marca (fixas — é a assinatura do canal)
+  · hashtags derivadas do tema do dia (mudam a cada vídeo)
+  · o resto do banco rotacionado por tema, sem repetir o conjunto anterior
+
+E a descrição ganha a linha de keywords logo abaixo do título, porque o
+YouTube indexa os primeiros ~500 caracteres.
+"""
+
+import re
+import unicodedata
+
+# Marca: as primeiras do banco. São as keywords-âncora do nicho e devem estar
+# em todo vídeo — é o que sustenta a descoberta orgânica do canal.
+N_MARCA = 3
+
+_SEPARADORES = re.compile(r"[—–\-:|,]")
+_NAO_TAG = re.compile(r"[^0-9A-Za-zÀ-ÿ]+")
+
+_IRRELEVANTES = {
+    # PT/ES
+    "de", "da", "do", "das", "dos", "na", "no", "nas", "nos", "em", "para",
+    "por", "com", "sem", "que", "quem", "quando", "onde", "como", "ao", "aos",
+    "a", "o", "as", "os", "um", "uma", "e", "ou", "se", "meu", "minha", "seu",
+    "sua", "the", "el", "la", "los", "las", "del", "al", "y", "en", "mi", "tu",
+    # EN
+    "of", "in", "on", "to", "and", "for", "with", "from", "is", "are", "who",
+    "what", "when", "where", "will", "shall", "my", "your", "his", "her",
+    "all", "not", "but", "than", "then", "into", "you", "they", "them",
+}
+
+
+def _camel(texto: str) -> str:
+    """'estrada escura' -> 'EstradaEscura'; mantém acento, tira pontuação."""
+    palavras = [p for p in _NAO_TAG.split(texto) if p]
+    return "".join(p[:1].upper() + p[1:] for p in palavras)
+
+
+def _ascii(texto: str) -> str:
+    return unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode().lower()
+
+
+def tags_do_tema(tema: str, *, max_tags=3):
+    """Hashtags derivadas do tema do dia.
+
+    O tema tem forma estável nos configs: `referência — descrição`
+    ("Salmo 91 — proteção na estrada escura"). A referência vira uma tag
+    fechada (#Salmo91), que é como o público busca; da descrição saem as
+    palavras com carga de imagem.
+    """
+    if not tema:
+        return []
+    partes = [p.strip() for p in _SEPARADORES.split(tema) if p.strip()]
+    tags, vistos = [], set()
+
+    def _add(txt):
+        tag = "#" + _camel(txt)
+        chave = _ascii(tag)
+        if len(tag) > 2 and chave not in vistos:
+            vistos.add(chave)
+            tags.append(tag)
+
+    if partes:
+        _add(partes[0])  # a referência: "Salmo 91" -> #Salmo91
+
+    for palavra in _NAO_TAG.split(" ".join(partes[1:])):
+        if len(tags) >= max_tags:
+            break
+        if len(palavra) >= 4 and _ascii(palavra) not in _IRRELEVANTES:
+            _add(palavra)
+    return tags[:max_tags]
+
+
+def hashtags(cfg, tema, *, n=11):
+    """Conjunto de hashtags deste vídeo: marca + tema + rotação do banco.
+
+    A rotação é determinística no tema — o mesmo tema devolve o mesmo
+    conjunto (a pauta pode ser regerada sem mudar o pacote), mas dois temas
+    diferentes não repetem o mesmo bloco.
+    """
+    banco = list(cfg.get("hashtags") or [])
+    resto = banco[N_MARCA:]
+
+    saida, vistos = [], set()
+
+    def _add(tag):
+        if tag and _ascii(tag) not in vistos and len(saida) < n:
+            vistos.add(_ascii(tag))
+            saida.append(tag)
+
+    for t in banco[:N_MARCA]:
+        _add(t)
+    for t in tags_do_tema(tema):
+        _add(t)
+
+    if resto:
+        giro = sum(ord(c) for c in _ascii(tema or "")) % len(resto)
+        for t in resto[giro:] + resto[:giro]:
+            _add(t)
+    return saida
+
+
+def linha_keywords(cfg, tema, *, n=4):
+    """Keywords do nicho + tema, para os primeiros 500 chars da descrição.
+
+    É onde o YouTube lê o assunto do vídeo. Sem isso a descrição começava
+    direto no texto de apresentação, que é escrito para gente, não para busca.
+    """
+    termos = list(cfg.get("tags_youtube") or [])[:n]
+    if tema:
+        termos.append(tema.split("—")[0].split("-")[0].strip())
+    vistos, saida = set(), []
+    for t in termos:
+        if t and _ascii(t) not in vistos:
+            vistos.add(_ascii(t))
+            saida.append(t)
+    return " · ".join(saida)
+
+
+CHECKLIST = {
+    "pt": [
+        "Aviso de IA na descrição **e** no card de informações do vídeo",
+        "Gancho do título gerado por `cli.py titulo` (é o que alimenta o cooldown)",
+        "Thumbnail com no máximo 6 palavras e contraste alto",
+        "Primeiros 3 segundos com o gancho sonoro — não abrir com intro longa",
+        "Horário fixo de publicação (o canal treina o público pelo horário)",
+        "Primeiro comentário fixado com pergunta de engajamento",
+    ],
+    "en": [
+        "AI disclosure in the description **and** in the video info card",
+        "Title hook generated by `cli.py titulo` (that is what feeds the cooldown)",
+        "Thumbnail with 6 words max and high contrast",
+        "Audio hook inside the first 3 seconds — no long intro",
+        "Fixed publishing time (the channel trains the audience by the clock)",
+        "Pinned first comment with an engagement question",
+    ],
+    "es": [
+        "Aviso de IA en la descripción **y** en la tarjeta de información",
+        "Gancho del título generado por `cli.py titulo` (alimenta el cooldown)",
+        "Miniatura con 6 palabras como máximo y alto contraste",
+        "Gancho sonoro en los primeros 3 segundos — sin intro larga",
+        "Horario fijo de publicación (el canal entrena al público por el horario)",
+        "Primer comentario fijado con pregunta de participación",
+    ],
+}
+
+
+def checklist(cfg):
+    itens = CHECKLIST.get(str(cfg.get("idioma", "pt"))[:2].lower(), CHECKLIST["pt"])
+    return "\n".join(f"- [ ] {i}" for i in itens)

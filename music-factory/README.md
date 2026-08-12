@@ -54,6 +54,42 @@ FAIXA 3: <base>, quase acústico: violão e voz, slide só no último refrão, s
 FAIXA 5: <base>, muito lento e íntimo, voz sussurrada, cordas ao fundo, sem percussão
 ```
 
+### A voz vem antes do gênero no style prompt
+
+O Suno pesa o começo do prompt. Descrever o gênero e a instrumentação primeiro
+e a voz por último — `"Country blues gospel BR, slide guitar, órgão suave,
+barítono rouco"` — devolvia faixa quase instrumental, com a voz recuada. Num
+canal de canção isso é a música inteira perdida.
+
+`core/style.py` monta o prompt na ordem que funciona:
+
+```
+[VOZ] + [identidade do canal] + [instrumentação da faixa] + [âncoras]
+```
+
+O campo `voz` é novo no config e vem primeiro; as âncoras (`vocals lead the
+mix`) fecham. O `exclude` ganha as guardas `instrumental only, backing vocals
+only, no lead vocals`, que são o que impede o modo de falha.
+
+**Canal instrumental não recebe nada disso** — lá a ausência de voz é a
+identidade, e uma âncora vocal destruiria a faixa.
+
+```bash
+python3 cli.py style --niche country_blues_fe   # prompt montado + diagnóstico
+```
+
+O diagnóstico entra sozinho nos avisos da pauta: nicho sem `voz`, termo
+ambíguo (`ambient`, `minimalist`) em canal de canção, exclude sem guarda.
+
+### Ofício da letra — o que vale para todo canal
+
+`regras_extra` diz o que é *daquele canal*. `core/lyriccraft.py` carrega o que
+vale para qualquer letra que vai virar áudio: gancho na primeira linha cantada
+(≤8 palavras), refrão cantável (≤8 palavras por linha, repetido), call &
+response marcado, acentuação emocional no máximo 2x por verso, ponte que traz
+o tema de forma reconhecível. Canal instrumental recebe o bloco equivalente
+para direção sonora: textura fixa nos primeiros 15s, arco sem clímax.
+
 ## O que a pauta entrega
 
 ```
@@ -74,6 +110,88 @@ o sistema entrega o prompt em vez de fingir que gera letra boa em template.
 
 Para o pacote de playlist (título, descrição, hashtags, chapters), passe
 `--com-playlist`. Fora do caminho diário por decisão.
+
+---
+
+## Score da letra — o passo entre o modelo e o Suno
+
+```bash
+python3 cli.py score --niche country_blues_fe --lyrics letras/01.txt \
+    --title "QUANDO O MEDO CHEGAR 🙏 | Country Blues Gospel Para Dormir em Paz"
+```
+
+O sistema mede o acervo (`quality`) e o que já foi publicado (`learn`).
+Faltava o meio: a letra recém-saída do modelo, ainda com tempo de ser refeita.
+Passar uma faixa ruim daqui custa geração no Suno, render e uma vaga na
+playlist.
+
+Cinco critérios de 20 pontos, escolhidos pelo que o próprio portfólio mostrou
+importar — não por lista genérica de boas práticas:
+
+| Critério | O que mede |
+|---|---|
+| estrutura | intro / verso / refrão / ponte / outro presentes |
+| refrão | linhas ≤8 palavras e refrão repetido |
+| gancho em 3s | abertura curta e já apontando para o refrão |
+| título | gancho do banco, benefício, e fora do descanso |
+| originalidade | imagens já saturadas no acervo, via `quality` |
+
+```
+🎯 SCORE — Country Blues e Fé — 90/100  🔥 alta probabilidade viral
+  ✅ estrutura      20/20  completa
+  ✅ refrão         20/20  linhas curtas; repetido 3x
+  ⚠️  gancho em 3s   10/20  abertura curta; as 4 primeiras linhas não anunciam o refrão
+```
+
+Em canal instrumental o comando recusa em vez de devolver número inventado:
+os critérios de letra não se aplicam lá.
+
+---
+
+## Titular pelo pipeline — a proteção que estava desligada
+
+```bash
+python3 cli.py titulo --niche country_blues_fe --total-sec 3900 --registrar
+```
+
+O `DIAGNOSTICO-ENTREGA-2026-08-07.md` mostrou o gancho «DEUS CONHECE SUA DOR»
+em 8 dos 20 títulos: o primeiro vídeo fez 8.629 views, a mediana dos sete
+seguintes foi 779. O `cooldown_gancho_dias` existia para impedir isso, mas os
+títulos estavam sendo escritos fora do sistema — `hook_usage` ficava vazia e o
+cooldown não tinha contra o que comparar.
+
+`titulo` existe para titular um vídeo avulso **sem** rodar a pauta inteira, e
+`--registrar` é o que fecha o ciclo. Sem a flag ele só mostra as opções.
+
+### Gancho aposentado vale para os parecidos
+
+`ganchos_aposentados` no config tira o gancho queimado de circulação — e junto
+os do banco que disputam a mesma busca. «DEUS VIU SUA DOR» compartilha 3 de 4
+palavras com «DEUS CONHECE SUA DOR»: filtrar só o literal deixaria o gêmeo
+continuar saindo. Se a aposentadoria esvaziar o banco, o sistema devolve tudo
+e avisa — ficar sem título é pior que repetir.
+
+---
+
+## SEO por vídeo — o que muda de um vídeo para o outro
+
+```bash
+python3 cli.py seo --niche country_blues_fe --tema "Salmo 91 — proteção na estrada escura"
+```
+
+A descrição usava `" ".join(cfg["hashtags"])`: as mesmas 11 hashtags em todo
+vídeo do canal. Com títulos que dividiam o mesmo gancho, isso entrega ao
+YouTube um sinal de duplicata.
+
+Agora cada vídeo recebe as hashtags de marca (as 3 primeiras do banco, que são
+as keywords-âncora e devem estar sempre), as derivadas do tema do dia
+(`Salmo 91 — proteção…` → `#Salmo91 #Proteção`) e o resto do banco rotacionado
+por tema. A rotação é determinística: o mesmo tema devolve o mesmo conjunto,
+temas diferentes não repetem o bloco.
+
+A descrição também ganhou a linha de keywords logo abaixo do título — é onde o
+YouTube lê o assunto — e o pacote saiu com `checklist-publicacao.txt`
+(disclosure de IA, thumbnail, horário fixo, comentário fixado).
 
 ## VIDIQ — demanda real por keyword
 

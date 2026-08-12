@@ -48,7 +48,8 @@
     "Revelation 21:4 — he will wipe every tear"
   ],
   "style_prompt": "Southern country gospel blues, dobro and pedal steel, fiddle, upright bass, weathered male voice, back-porch harmony, dry vintage recording",
-  "exclude_styles": "Hammond organ church gospel, EDM, trap, rap, bright pop worship, heavy autotune, metal, electronic drums, orchestral strings",
+  "voz": "Warm American baritone vocals, weathered and plain-spoken, family harmony on the chorus",
+  "exclude_styles": "Hammond organ church gospel, EDM, trap, rap, bright pop worship, heavy autotune, metal, electronic drums, orchestral strings, instrumental only, backing vocals only, no lead vocals",
   "estrutura": "[Intro] [Verse 1] [Chorus] [Verse 2] [Chorus] [Bridge] [Final Chorus] [Outro]",
   "formula_titulo": "{GANCHO} 🙏 | {DURACAO} of Southern Country Gospel Music for {BENEFICIO}",
   "formula_alt": [

@@ -10,7 +10,8 @@
   "cooldown_gancho_dias": 30,
   "duracao_media_faixa_sec": 270,
   "style_prompt": "Gospel blues soul BR, guitarra elétrica limpa com bend, órgão Hammond, voz masculina soul rasgada, coro feminino de apoio, gravação quente de estúdio",
-  "exclude_styles": "country, sertanejo, viola caipira, slide guitar rural, EDM, trap, funk, rap, pop worship brilhante, autotune pesado, metal, bateria eletrônica",
+  "voz": "Male soul vocals, gritty and powerful, female backing choir answering the lead",
+  "exclude_styles": "country, sertanejo, viola caipira, slide guitar rural, EDM, trap, funk, rap, pop worship brilhante, autotune pesado, metal, bateria eletrônica, instrumental only, backing vocals only, no lead vocals",
   "formula_titulo": "{GANCHO} 🙏 | {BENEFICIO}",
   "formula_alt": [
     "{GANCHO} 🙏 | {DURACAO} de Gospel Blues Para {BENEFICIO}",

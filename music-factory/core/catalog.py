@@ -8,6 +8,10 @@ from pathlib import Path
 MOODS = ("open", "retain", "calm")
 STATUSES = ("draft", "suno_ready", "audio_ok", "published")
 
+# Duas palavras de conteúdo em comum para considerar colisão de gancho —
+# mesmo critério de `quality.title_collisions`.
+MIN_PALAVRAS_COMUNS = 2
+
 
 def now() -> str:
     # microssegundos: com precisão de segundos, dois registros no mesmo segundo
@@ -185,6 +189,61 @@ def pick_hook(conn, niche, hook_bank, *, cooldown_days=30):
     if livres:
         return livres
     return sorted(hook_bank, key=lambda h: used.get(h, ""))
+
+
+def _tokens(hook):
+    """Palavras de conteúdo do gancho — sem artigo, preposição ou pronome.
+
+    Comparar palavra funcional produz semelhança falsa: «WHEN THE HARVEST
+    FAILED» e «WHEN THE WELL RAN DRY» dividem só `when` e `the`, e mesmo
+    assim bateriam metade das palavras. Sem elas, dividem zero — que é o
+    certo, porque são duas cenas diferentes disputando buscas diferentes.
+    """
+    from . import quality
+    stop = quality._stopwords()
+    return {t for t in re.split(r"[^a-zA-Z0-9]+", slugify(hook))
+            if len(t) >= 3 and t not in stop}
+
+
+def filter_retired(hook_bank, aposentados, *, limiar=0.6):
+    """Tira do banco os ganchos parecidos demais com um gancho aposentado.
+
+    Não basta comparar texto exato. O gancho que canibalizou o Country Blues
+    e Fé foi «DEUS CONHECE SUA DOR», publicado 8 vezes; o banco do config tem
+    «DEUS VIU SUA DOR» — títulos diferentes que disputam exatamente a mesma
+    busca. Filtrar só o literal deixaria o problema de pé.
+
+    A semelhança é a fração de palavras de conteúdo em comum sobre o menor
+    dos dois ganchos: `deus`+`dor` de 3 = 0.67, acima do limiar, some do
+    banco.
+
+    E são precisas **duas** palavras em comum, não uma — a mesma regra que
+    `quality.title_collisions` já usa. Num canal gospel quase todo gancho
+    contém "Deus": só isso em comum é o assunto do canal, não colisão de
+    busca. Sem o mínimo, aposentar «DEUS CONHECE SUA DOR» levava junto
+    «DEUS TE TROUXE ATÉ AQUI», que não disputa nada com ele.
+
+    Devolve (liberados, removidos). Se sobrar nada, devolve o banco inteiro —
+    ficar sem título é pior que repetir, e quem chama avisa.
+    """
+    if not aposentados:
+        return list(hook_bank), []
+    velhos = [_tokens(a) for a in aposentados if a]
+    exatos = {slugify(a) for a in aposentados if a}
+
+    livres, removidos = [], []
+    for h in hook_bank:
+        th = _tokens(h)
+        # O gancho aposentado sai sempre, mesmo que seja curto demais para
+        # a regra de semelhança julgar (um gancho de uma palavra só).
+        parecido = slugify(h) in exatos or any(
+            th and tv
+            and len(th & tv) >= MIN_PALAVRAS_COMUNS
+            and len(th & tv) / min(len(th), len(tv)) >= limiar
+            for tv in velhos
+        )
+        (removidos if parecido else livres).append(h)
+    return (livres or list(hook_bank)), removidos
 
 
 def register_hook(conn, niche, hook):

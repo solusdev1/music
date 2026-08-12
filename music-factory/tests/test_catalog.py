@@ -131,3 +131,56 @@ def test_import_suno_folder_reads_style_and_lyrics(conn, tmp_path):
     assert t["title"] == "Minha Musica"
     assert t["style_prompt"] == "estilo x"
     assert t["status"] == "suno_ready"
+
+
+def test_filter_retired_pega_gancho_parecido_nao_so_o_identico():
+    """«DEUS VIU SUA DOR» disputa a mesma busca de «DEUS CONHECE SUA DOR».
+
+    É a colisão medida no DIAGNOSTICO-ENTREGA-2026-08-07: filtrar só o
+    literal deixaria o gancho gêmeo continuar saindo.
+    """
+    banco = ["DEUS VIU SUA DOR", "QUANDO O MEDO CHEGAR", "NÃO DESISTA"]
+    livres, removidos = catalog.filter_retired(banco, ["DEUS CONHECE SUA DOR"])
+    assert removidos == ["DEUS VIU SUA DOR"]
+    assert livres == ["QUANDO O MEDO CHEGAR", "NÃO DESISTA"]
+
+
+def test_filter_retired_sem_aposentados_devolve_tudo():
+    banco = ["A", "B"]
+    assert catalog.filter_retired(banco, []) == (["A", "B"], [])
+
+
+def test_filter_retired_nao_deixa_o_banco_vazio():
+    """Ficar sem título é pior que repetir: degrada em vez de travar."""
+    banco = ["DEUS VIU SUA DOR"]
+    livres, removidos = catalog.filter_retired(banco, ["DEUS CONHECE SUA DOR"])
+    assert livres == banco
+    assert removidos == banco
+
+
+def test_filter_retired_pega_gemeo_publicado_de_verdade():
+    """«DEUS CONHECE SUAS LÁGRIMAS» saiu em 05/08 e fez 28 v/dia.
+
+    É o mesmo gancho de «DEUS CONHECE SUA DOR» com a última palavra trocada —
+    exatamente o padrão que derrubou a entrega. Achado na coleta de 12/08.
+    """
+    banco = ["DEUS CONHECE SUAS LÁGRIMAS", "QUANDO O MEDO CHEGAR"]
+    livres, removidos = catalog.filter_retired(banco, ["DEUS CONHECE SUA DOR"])
+    assert removidos == ["DEUS CONHECE SUAS LÁGRIMAS"]
+    assert livres == ["QUANDO O MEDO CHEGAR"]
+
+
+def test_filter_retired_nao_confunde_palavra_funcional():
+    """Dividir «when»/«the» não é colisão — são duas cenas diferentes."""
+    livres, removidos = catalog.filter_retired(
+        ["WHEN THE WELL RAN DRY"], ["WHEN THE HARVEST FAILED"])
+    assert removidos == []
+    assert livres == ["WHEN THE WELL RAN DRY"]
+
+
+def test_filter_retired_nao_confunde_palavra_tema_do_canal():
+    """Num canal gospel quase todo gancho tem «Deus»: só isso não é colisão."""
+    banco = ["DEUS TE TROUXE ATÉ AQUI", "DEUS VAI RENOVAR SUAS FORÇAS"]
+    livres, removidos = catalog.filter_retired(banco, ["DEUS CONHECE SUA DOR"])
+    assert removidos == []
+    assert livres == banco

@@ -56,7 +56,8 @@
   "idioma": "en-US",
   "pais": "US",
   "style_prompt": "Vintage gospel blues, slide guitar, Hammond organ, soulful male baritone, church choir finale, warm analog tape",
-  "exclude_styles": "EDM, trap, rap, bright pop worship, heavy autotune, metal, electronic drums, children voices",
+  "voz": "Soulful male baritone vocals, church-raised delivery, choir answering the lead",
+  "exclude_styles": "EDM, trap, rap, bright pop worship, heavy autotune, metal, electronic drums, children voices, instrumental only, backing vocals only, no lead vocals",
   "formula_titulo": "{GANCHO} 🙏 Gospel Blues | {BENEFICIO}",
   "formula_alt": [
     "{GANCHO} 🙏 | {DURACAO} of Gospel Blues for {BENEFICIO}",

@@ -77,3 +77,67 @@ def test_generate_is_language_aware_for_description(conn, tmp_path, niche_cfg):
                              n_songs=1, niches_dir=niches_dir, com_playlist=True)
     desc = (result["out_dir"] / "playlist" / "descricao.txt").read_text(encoding="utf-8")
     assert "Press play" in desc
+
+
+def test_titulo_sem_duracao_nao_deixa_conector_orfao(conn, niche_cfg):
+    """Sem áudio ainda não há duração honesta — o slot sai inteiro."""
+    cfg = dict(niche_cfg, formula_titulo="{GANCHO} 🙏 | {DURACAO} de Teste Para {BENEFICIO}")
+    titulo = brief.make_titles(conn, cfg, n=1)[0]["titulo"]
+    assert " de Teste" not in titulo
+    assert "  " not in titulo
+    assert titulo.startswith("GANCHO UM 🙏 | Teste Para")
+
+
+def test_make_titles_ignora_gancho_aposentado(conn, niche_cfg):
+    cfg = dict(niche_cfg, ganchos_aposentados=["GANCHO UM"])
+    ganchos = [t["gancho"] for t in brief.make_titles(conn, cfg, n=3)]
+    assert "GANCHO UM" not in ganchos
+
+
+def test_hashtags_da_playlist_variam_com_o_tema(conn, tmp_path, niche_cfg):
+    """A lista fixa em todo vídeo reforçava sinal de duplicata no YouTube."""
+    cfg = dict(niche_cfg, hashtags=[f"#Tag{i}" for i in range(10)])
+    niches_dir = tmp_path / "niches"
+    niches_dir.mkdir()
+    (niches_dir / "test_niche.json").write_text(json.dumps(cfg), encoding="utf-8")
+
+    r1 = brief.generate(conn, cfg, tmp_path / "out", today="2026-08-06", n_songs=1,
+                        niches_dir=niches_dir, com_playlist=True)
+    r2 = brief.generate(conn, cfg, tmp_path / "out", today="2026-08-07", n_songs=1,
+                        niches_dir=niches_dir, com_playlist=True)
+    assert r1["tema"] != r2["tema"]
+    tags1 = (r1["out_dir"] / "playlist" / "hashtags.txt").read_text(encoding="utf-8")
+    tags2 = (r2["out_dir"] / "playlist" / "hashtags.txt").read_text(encoding="utf-8")
+    assert tags1 != tags2
+
+
+def test_pauta_avisa_style_prompt_sem_voz(conn, tmp_path, niche_cfg):
+    niches_dir = tmp_path / "niches"
+    niches_dir.mkdir()
+    (niches_dir / "test_niche.json").write_text(json.dumps(niche_cfg), encoding="utf-8")
+    r = brief.generate(conn, niche_cfg, tmp_path / "out", today="2026-08-06",
+                       n_songs=1, niches_dir=niches_dir)
+    assert any("`voz`" in a for a in r["avisos"])
+
+
+def test_prompt_do_dia_carrega_o_oficio_da_letra(conn, tmp_path, niche_cfg):
+    niches_dir = tmp_path / "niches"
+    niches_dir.mkdir()
+    (niches_dir / "test_niche.json").write_text(json.dumps(niche_cfg), encoding="utf-8")
+    r = brief.generate(conn, niche_cfg, tmp_path / "out", today="2026-08-06",
+                       n_songs=1, niches_dir=niches_dir)
+    prompt = (r["out_dir"] / "01-PROMPT-LETRAS.md").read_text(encoding="utf-8")
+    assert "Gancho nos 3 primeiros segundos" in prompt
+    assert "Refrão cantável" in prompt
+
+
+def test_faixa_instrumental_recebe_oficio_proprio(conn, tmp_path, niche_cfg):
+    cfg = dict(niche_cfg, niche="inst", formato="instrumental")
+    niches_dir = tmp_path / "niches"
+    niches_dir.mkdir()
+    (niches_dir / "inst.json").write_text(json.dumps(cfg), encoding="utf-8")
+    r = brief.generate(conn, cfg, tmp_path / "out", today="2026-08-06",
+                       n_songs=1, niches_dir=niches_dir)
+    prompt = (r["out_dir"] / "01-PROMPT-LETRAS.md").read_text(encoding="utf-8")
+    assert "nunca resolve num clímax" in prompt.lower()
+    assert "Refrão cantável" not in prompt
