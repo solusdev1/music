@@ -156,3 +156,31 @@ def test_filter_retired_nao_deixa_o_banco_vazio():
     livres, removidos = catalog.filter_retired(banco, ["DEUS CONHECE SUA DOR"])
     assert livres == banco
     assert removidos == banco
+
+
+def test_filter_retired_pega_gemeo_publicado_de_verdade():
+    """«DEUS CONHECE SUAS LÁGRIMAS» saiu em 05/08 e fez 28 v/dia.
+
+    É o mesmo gancho de «DEUS CONHECE SUA DOR» com a última palavra trocada —
+    exatamente o padrão que derrubou a entrega. Achado na coleta de 12/08.
+    """
+    banco = ["DEUS CONHECE SUAS LÁGRIMAS", "QUANDO O MEDO CHEGAR"]
+    livres, removidos = catalog.filter_retired(banco, ["DEUS CONHECE SUA DOR"])
+    assert removidos == ["DEUS CONHECE SUAS LÁGRIMAS"]
+    assert livres == ["QUANDO O MEDO CHEGAR"]
+
+
+def test_filter_retired_nao_confunde_palavra_funcional():
+    """Dividir «when»/«the» não é colisão — são duas cenas diferentes."""
+    livres, removidos = catalog.filter_retired(
+        ["WHEN THE WELL RAN DRY"], ["WHEN THE HARVEST FAILED"])
+    assert removidos == []
+    assert livres == ["WHEN THE WELL RAN DRY"]
+
+
+def test_filter_retired_nao_confunde_palavra_tema_do_canal():
+    """Num canal gospel quase todo gancho tem «Deus»: só isso não é colisão."""
+    banco = ["DEUS TE TROUXE ATÉ AQUI", "DEUS VAI RENOVAR SUAS FORÇAS"]
+    livres, removidos = catalog.filter_retired(banco, ["DEUS CONHECE SUA DOR"])
+    assert removidos == []
+    assert livres == banco
